@@ -1,0 +1,2742 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      GST Reconciliation Tool — Books vs GSTR-2B (Recon Engine v1.7.0)
+    </title>
+    
+    <!-- Browser tab icon (Favicon) -->
+    <link rel="icon" type="image/png" href="logo.png">
+
+    <!-- Tailwind CSS Static File -->
+    <link href="./output.css" rel="stylesheet">
+    
+    <!-- sheetjs (XLSX with styling support) library -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Inter & JetBrains Mono Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #0f172a;
+        --accent: #2563eb;
+      }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: #f8fafc;
+      }
+      .font-mono {
+        font-family: "JetBrains Mono", monospace;
+      }
+      .tab-btn {
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+      }
+      .tab-btn.active {
+        border-color: var(--tab-color, #2563eb);
+        color: var(--tab-color, #2563eb);
+        background: #ffffff;
+        font-weight: 850;
+      }
+      .upload-zone {
+        border: 2px dashed;
+        transition: all 0.25s;
+        cursor: pointer;
+      }
+      .upload-zone:hover {
+        background-color: rgba(239, 246, 255, 0.6);
+        border-color: #3b82f6;
+      }
+      .upload-zone.drag {
+        border-color: #2563eb;
+        background-color: #eff6ff;
+        transform: scale(1.01);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        border: 1px solid #e2e8f0;
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+      th {
+        background: #f1f5f9;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        color: #334155;
+        white-space: nowrap;
+        border-bottom: 2px solid #cbd5e1;
+      }
+      tr:hover td {
+        background: #f8fafc;
+      }
+      tfoot td {
+        background: #f1f5f9;
+        font-weight: 800;
+        color: #0f172a;
+        border-top: 2px solid #94a3b8;
+      }
+      .summary-section td {
+        font-weight: 800;
+        color: #1e3a8a;
+        background: #f0fdf4;
+      }
+      .summary-total td {
+        background: #f1f5f9;
+        font-weight: 800;
+        border-top: 2px solid #64748b;
+        border-bottom: 2px solid #64748b;
+        color: #0f172a;
+      }
+      .summary-diff td {
+        background: #fef9c3;
+        font-weight: 800;
+        border-top: 2px solid #fbbf24;
+        border-bottom: 2px solid #fbbf24;
+      }
+      .summary-indent td:first-child {
+        padding-left: 24px;
+      }
+      .spinner {
+        border: 3px solid #e2e8f0;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 0.6s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .match-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 800;
+        border-radius: 4px;
+        padding: 2px 6px;
+      }
+      .tier-1 {
+        background: #dcfce7;
+        color: #15803d;
+      }
+      .tier-2 {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      .tier-3 {
+        background: #fef3c7;
+        color: #d97706;
+      }
+      .tier-4 {
+        background: #e0e7ff;
+        color: #4338ca;
+      }
+      .tier-5 {
+        background: #f1f5f9;
+        color: #475569;
+      }
+
+      /* Fail-safe custom overrides for dark mode */
+      body.dark {
+        background: #0f172a !important;
+        color: #f1f5f9 !important;
+      }
+      body.dark .bg-white {
+        background-color: #1e293b !important;
+      }
+      body.dark .bg-slate-50,
+      body.dark .bg-slate-50\/50,
+      body.dark .bg-slate-100 {
+        background-color: #334155 !important;
+      }
+      body.dark .text-slate-900,
+      body.dark .text-slate-800 {
+        color: #f1f5f9 !important;
+      }
+      body.dark .text-slate-700,
+      body.dark .text-slate-600,
+      body.dark .text-slate-500 {
+        color: #cbd5e1 !important;
+      }
+      body.dark .border-slate-150,
+      body.dark .border-slate-200,
+      body.dark .border-slate-300 {
+        border-color: #334155 !important;
+      }
+      body.dark th,
+      body.dark td {
+        border-color: #334155 !important;
+        color: #f1f5f9 !important;
+      }
+      body.dark th {
+        background: #0f172a !important;
+      }
+      body.dark tr:hover td {
+        background-color: #334155 !important;
+      }
+      body.dark .summary-section td {
+        background: #14532d !important;
+        color: #34d399 !important;
+      }
+      body.dark .summary-total td {
+        background: #0f172a !important;
+        color: #ffffff !important;
+      }
+      body.dark .summary-diff td {
+        background: #713f12 !important;
+        color: #fef08a !important;
+      }
+      body.dark select {
+        background-color: #1e293b !important;
+        color: #f1f5f9 !important;
+      }
+      body.dark input {
+        background-color: #1e293b !important;
+        color: #f1f5f9 !important;
+      }
+      body.dark .bg-indigo-50 {
+        background-color: #312e81 !important;
+      }
+      body.dark .text-indigo-900 {
+        color: #e0e7ff !important;
+      }
+    </style>
+  </head>
+  <body class="text-slate-900 border-t-4 border-blue-600 min-h-screen flex flex-col">
+    <!-- STANDALONE APP HEADER -->
+    <header class="bg-slate-900 text-white shadow-xl py-4 border-b border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        
+        <div class="flex items-center gap-3.5">
+          <!-- NEW PNG LOGO -->
+          <div class="relative shrink-0 select-none overflow-hidden rounded-[22%] bg-white border border-slate-800 shadow-xl shadow-black/50 flex items-center justify-center p-1 w-14 h-14">
+            <img src="logo.png" alt="AJ Logo" class="w-full h-full object-contain scale-[1.0]">
+          </div>
+          
+          <div>
+            <h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2.5">
+              AJ Innovation &amp; Design
+              <span class="px-2.5 py-0.5 rounded bg-blue-500/15 text-[11px] text-blue-300 font-bold tracking-wide border border-blue-500/25">Recon Engine v1.7.0</span>
+            </h1>
+            <p class="text-xs text-slate-400 font-bold tracking-widest uppercase mt-0.5">
+              UNIVERSAL LEDGER &amp; RECONCILIATION SUITE
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 shrink-0">
+          <!-- THEME TOGGLE -->
+          <div class="flex items-center gap-3 bg-white/10 px-3.5 py-1.5 rounded-full border border-white/10 shadow-inner select-none shrink-0">
+            <span id="theme-label" class="text-xs font-semibold text-slate-200">Light Mode</span>
+            <button
+              onclick="toggleTheme()"
+              class="relative flex items-center h-[26px] w-[50px] rounded-full bg-slate-800 hover:bg-slate-700 p-0.5 cursor-pointer transition-colors duration-300"
+            >
+              <div class="absolute inset-0 flex justify-between items-center px-1.5 text-slate-500 pointer-events-none">
+                <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                </svg>
+                <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+              </div>
+              <div id="theme-knob" class="w-[20px] h-[20px] rounded-full bg-white shadow-md flex items-center justify-center transform transition-transform duration-300 z-10 translate-x-0">
+                <span id="knob-icon-parent">
+                  <svg class="w-3 h-3 text-amber-500" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="4" />
+                  </svg>
+                </span>
+              </div>
+            </button>
+          </div>
+
+          <div id="runtime-controls" class="hidden flex items-center gap-2">
+            <button
+              onclick="triggerStandaloneSaveAs('GST_Reconciliation_Report.xlsx')"
+              class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition shadow-md cursor-pointer"
+            >
+              📥 Download Linked Excel Workbook
+            </button>
+            <button
+              onclick="restartWorkspace()"
+              class="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition border border-slate-700 cursor-pointer"
+            >
+              ↺ Reset App
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- CONTENT VIEWPORTS -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <!-- FILE SELECTORS CARD -->
+      <div
+        id="file-uploader-panel"
+        class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-6"
+      >
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <div>
+            <h2 class="text-base font-bold text-slate-900">
+              Upload Spreadsheet Invoices
+            </h2>
+            <p class="text-xs text-slate-500 font-medium">
+              Add books of account alongside GSTR-2B download archives to
+              initiate matching logic.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              onclick="toggleFieldMapper()"
+              id="mapper-trigger-btn"
+              class="hidden text-xs font-semibold text-slate-600 hover:text-blue-600 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200"
+            >
+              ⚙ Field Mapping Selection <span id="mapper-angle">▼</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 font-sans">
+          <!-- SOURCE 1 DRAG AND DROP -->
+          <div
+            class="space-y-2 bg-slate-50/50 p-4 border border-slate-150 rounded-xl"
+          >
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <input
+                type="text"
+                id="source1-name"
+                value="PURCHASE LEDGER (BOOKS)"
+                class="text-xs font-bold px-2.5 py-1 rounded bg-blue-50 border border-blue-200 text-blue-700 uppercase tracking-widest w-full focus:outline-none focus:ring-1 focus:ring-blue-500"
+                oninput="
+                  this.value = this.value.toUpperCase();
+                  updateSourceNames();
+                "
+              />
+              <span
+                class="text-xs font-semibold text-slate-400 whitespace-nowrap"
+                >Source 1</span
+              >
+            </div>
+
+            <div
+              id="books-drop"
+              class="upload-zone rounded-xl p-8 flex flex-col items-center justify-center text-center bg-white border-slate-200"
+              ondragover="setDragOver(event, 'books')"
+              ondragleave="cancelDrag('books')"
+              ondrop="handleFileDrop(event, 'books')"
+              onclick="triggerFileInput('books')"
+            >
+              <input
+                type="file"
+                id="books-file-input"
+                accept=".xlsx,.xls,.csv"
+                class="hidden"
+                onchange="handleFileSelected(event, 'books')"
+              />
+              <div id="books-upload-indicator" class="space-y-2">
+                <span class="text-3xl block">📊</span>
+                <p
+                  class="text-sm font-bold text-slate-700"
+                  id="books-drop-text"
+                >
+                  Drop Purchase Register here
+                </p>
+                <p
+                  class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider"
+                >
+                  Supports XLSX, XLS, CSV
+                </p>
+              </div>
+            </div>
+
+            <div
+              id="books-tracker"
+              class="hidden bg-white border border-slate-200 rounded-lg p-3 space-y-3"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  id="books-filename"
+                  class="text-xs font-bold text-slate-700 truncate max-w-[150px]"
+                  >file.xlsx</span
+                >
+                <button
+                  onclick="resetTrackerUI('books')"
+                  class="text-[10px] font-bold text-red-500 hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
+
+              <!-- Sheet Selector Source 1 -->
+              <div
+                id="books-sheet-container"
+                class="hidden flex items-center justify-between gap-2 bg-blue-50/30 p-2 rounded border border-blue-100"
+              ></div>
+
+              <div class="flex items-center gap-2">
+                <label class="text-[10px] font-bold text-slate-500 uppercase"
+                  >Start Row:</label
+                >
+                <input
+                  type="number"
+                  id="books-start-row"
+                  value="1"
+                  min="1"
+                  class="w-12 text-[10px] border border-slate-200 rounded px-1 py-0.5 focus:outline-none"
+                />
+                <button
+                  onclick="reprocessFile('books')"
+                  class="text-[10px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-bold hover:bg-slate-200"
+                >
+                  Reload
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SOURCE 2 DRAG AND DROP -->
+          <div
+            class="space-y-2 bg-slate-50/50 p-4 border border-slate-150 rounded-xl"
+          >
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <input
+                type="text"
+                id="source2-name"
+                value="GSTR-2B (PORTAL)"
+                class="text-xs font-bold px-2.5 py-1 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 uppercase tracking-widest w-full focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                oninput="
+                  this.value = this.value.toUpperCase();
+                  updateSourceNames();
+                "
+              />
+              <span
+                class="text-xs font-semibold text-slate-400 whitespace-nowrap"
+                >Source 2</span
+              >
+            </div>
+
+            <div
+              id="gstr2b-drop"
+              class="upload-zone rounded-xl p-8 flex flex-col items-center justify-center text-center bg-white border-slate-200"
+              ondragover="setDragOver(event, 'gstr2b')"
+              ondragleave="cancelDrag('gstr2b')"
+              ondrop="handleFileDrop(event, 'gstr2b')"
+              onclick="triggerFileInput('gstr2b')"
+            >
+              <input
+                type="file"
+                id="gstr2b-file-input"
+                accept=".xlsx,.xls,.csv"
+                class="hidden"
+                onchange="handleFileSelected(event, 'gstr2b')"
+              />
+              <div id="gstr2b-upload-indicator" class="space-y-2">
+                <span class="text-3xl block">📥</span>
+                <p
+                  class="text-sm font-bold text-slate-700"
+                  id="gstr2b-drop-text"
+                >
+                  Drop GSTR-2B Archive here
+                </p>
+                <p
+                  class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider"
+                >
+                  Portal Excel / JSON Exports
+                </p>
+              </div>
+            </div>
+
+            <div
+              id="gstr2b-tracker"
+              class="hidden bg-white border border-slate-200 rounded-lg p-3 space-y-3"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  id="gstr2b-filename"
+                  class="text-xs font-bold text-slate-700 truncate max-w-[150px]"
+                  >file.xlsx</span
+                >
+                <button
+                  onclick="resetTrackerUI('gstr2b')"
+                  class="text-[10px] font-bold text-red-500 hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
+
+              <!-- Sheet Selector Source 2 -->
+              <div
+                id="gstr2b-sheet-container"
+                class="hidden flex items-center justify-between gap-2 bg-emerald-50/30 p-2 rounded border border-emerald-100"
+              ></div>
+
+              <div class="flex items-center gap-2">
+                <label class="text-[10px] font-bold text-slate-500 uppercase"
+                  >Start Row:</label
+                >
+                <input
+                  type="number"
+                  id="gstr2b-start-row"
+                  value="1"
+                  min="1"
+                  class="w-12 text-[10px] border border-slate-200 rounded px-1 py-0.5 focus:outline-none"
+                />
+                <button
+                  onclick="reprocessFile('gstr2b')"
+                  class="text-[10px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-bold hover:bg-slate-200"
+                >
+                  Reload
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FIELD MAPPER -->
+        <div
+          id="field-mapper-container"
+          class="hidden border-t border-slate-100 pt-6 animate-in fade-in slide-in-from-top-2 duration-300"
+        >
+          <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <div class="flex items-center justify-between mb-4">
+              <h3
+                class="text-xs font-extrabold text-slate-800 uppercase tracking-widest"
+              >
+                Header Column Mapping
+              </h3>
+              <span
+                class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100"
+                >AUTO-DETECTED</span
+              >
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+              <div id="books-mapping-list" class="space-y-3"></div>
+              <div id="gstr2b-mapping-list" class="space-y-3"></div>
+            </div>
+            <div
+              class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+            >
+              <div class="flex flex-col gap-1 w-full sm:w-auto">
+                <label
+                  class="text-xs font-bold text-slate-600 uppercase tracking-wide"
+                >
+                  Fallback Rule Matching Mode
+                </label>
+                <select
+                  id="match-level-mode"
+                  class="p-2 border border-slate-300 rounded-lg text-sm font-semibold bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 h-9 shrink-0"
+                >
+                  <option value="auto">
+                    Auto (Hierarchical Matching passes [1-5])
+                  </option>
+                  <option value="tier1">
+                    Strictly: Taxable Amount + Name + Date (Tier 1)
+                  </option>
+                  <option value="tier2">
+                    Lenient Date: Taxable Amount + Similarity Name (Tier 2)
+                  </option>
+                  <option value="tier3">
+                    Lenient Name: Taxable Amount + Date Match (Tier 3)
+                  </option>
+                  <option value="tier4">
+                    Strict Bill: Match Invoice Identifiers + Taxable (Tier 4)
+                  </option>
+                  <option value="tier5">
+                    Identifier Only: Loose Invoice Document Match (Tier 5)
+                  </option>
+                </select>
+              </div>
+              <button
+                onclick="runReconciliation()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-extrabold text-sm shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-95"
+              >
+                🚀 Run Reconciliation Engine
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROCESSING OVERLAY -->
+      <div
+        id="processing-overlay"
+        class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center"
+      >
+        <div
+          class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4"
+        >
+          <div class="spinner"></div>
+          <p class="text-sm font-bold text-slate-800">
+            Processing Reconciliation...
+          </p>
+        </div>
+      </div>
+
+      <!-- RESULTS VIEWPORT -->
+      <div
+        id="results-viewport"
+        class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
+      >
+        <!-- SUMMARY CARDS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div
+            class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"
+          >
+            <p
+              class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1"
+            >
+              Total Invoices
+            </p>
+            <div class="flex items-baseline gap-2">
+              <span
+                id="stat-total-count"
+                class="text-2xl font-black text-slate-900"
+                >0</span
+              >
+              <span class="text-[10px] font-bold text-slate-400">Records</span>
+            </div>
+          </div>
+          <div
+            class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"
+          >
+            <p
+              class="text-[10px] font-extrabold text-emerald-500 uppercase tracking-widest mb-1"
+            >
+              Fully Matched
+            </p>
+            <div class="flex items-baseline gap-2">
+              <span
+                id="stat-matched-count"
+                class="text-2xl font-black text-emerald-600"
+                >0</span
+              >
+              <span
+                id="stat-matched-pct"
+                class="text-[10px] font-bold text-emerald-500"
+                >0%</span
+              >
+            </div>
+          </div>
+          <div
+            class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"
+          >
+            <p
+              class="text-[10px] font-extrabold text-amber-500 uppercase tracking-widest mb-1"
+            >
+              Amount Diff
+            </p>
+            <div class="flex items-baseline gap-2">
+              <span
+                id="stat-diff-count"
+                class="text-2xl font-black text-amber-600"
+                >0</span
+              >
+              <span class="text-[10px] font-bold text-amber-500">Alerts</span>
+            </div>
+          </div>
+          <div
+            class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"
+          >
+            <p
+              class="text-[10px] font-extrabold text-red-500 uppercase tracking-widest mb-1"
+            >
+              Missing
+            </p>
+            <div class="flex items-baseline gap-2">
+              <span
+                id="stat-missing-count"
+                class="text-2xl font-black text-red-600"
+                >0</span
+              >
+              <span class="text-[10px] font-bold text-red-500"
+                >Unreconciled</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- TABS SYSTEM -->
+        <div
+          class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
+        >
+          <div
+            class="flex overflow-x-auto bg-slate-50/50 border-b border-slate-200 no-scrollbar"
+          >
+            <button
+              onclick="switchTab('summary')"
+              class="tab-btn active px-6 py-4 text-xs font-bold whitespace-nowrap"
+              id="tab-summary-btn"
+              style="--tab-color: #0f172a"
+            >
+              📋 RECON SUMMARY
+            </button>
+            <button
+              onclick="switchTab('matched')"
+              class="tab-btn px-6 py-4 text-xs font-bold whitespace-nowrap"
+              id="tab-matched-btn"
+              style="--tab-color: #10b981"
+            >
+              ✅ FULLY MATCHED
+            </button>
+            <button
+              onclick="switchTab('diff')"
+              class="tab-btn px-6 py-4 text-xs font-bold whitespace-nowrap"
+              id="tab-diff-btn"
+              style="--tab-color: #f59e0b"
+            >
+              ⚠️ AMOUNT VARIANCE
+            </button>
+            <button
+              onclick="switchTab('books-only')"
+              class="tab-btn px-6 py-4 text-xs font-bold whitespace-nowrap"
+              id="tab-books-only-btn"
+              style="--tab-color: #ef4444"
+            >
+              📕 MISSING IN 2B
+            </button>
+            <button
+              onclick="switchTab('gstr-only')"
+              class="tab-btn px-6 py-4 text-xs font-bold whitespace-nowrap"
+              id="tab-gstr-only-btn"
+              style="--tab-color: #6366f1"
+            >
+              📘 MISSING IN BOOKS
+            </button>
+          </div>
+
+          <div class="p-0 overflow-x-auto">
+            <!-- SUMMARY VIEW -->
+            <div id="view-summary" class="tab-view p-6 space-y-8">
+              <div class="grid lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2">
+                  <h3
+                    class="text-sm font-black text-slate-900 mb-4 flex items-center gap-2"
+                  >
+                    <span class="w-2 h-6 bg-slate-900 rounded-full"></span>
+                    ITC RECONCILIATION WORKING PAPER
+                  </h3>
+                  <div
+                    class="overflow-hidden border border-slate-200 rounded-xl"
+                  >
+                    <table id="summary-table" class="font-sans">
+                      <thead>
+                        <tr>
+                          <th>Particulars</th>
+                          <th class="text-right">Taxable Value</th>
+                          <th class="text-right">IGST</th>
+                          <th class="text-right">CGST</th>
+                          <th class="text-right">SGST</th>
+                        </tr>
+                      </thead>
+                      <tbody id="summary-body"></tbody>
+                    </table>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="text-sm font-black text-slate-900 mb-4">
+                    MATCHING DISTRIBUTION
+                  </h3>
+                  <div
+                    class="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex items-center justify-center min-h-[300px]"
+                  >
+                    <canvas id="reconChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- DATA VIEWS -->
+            <div id="view-matched" class="tab-view hidden">
+              <table id="matched-table">
+                <thead>
+                  <tr id="matched-header-row"></tr>
+                </thead>
+                <tbody id="matched-body"></tbody>
+              </table>
+            </div>
+            <div id="view-diff" class="tab-view hidden">
+              <table id="diff-table">
+                <thead>
+                  <tr id="diff-header-row"></tr>
+                </thead>
+                <tbody id="diff-body"></tbody>
+              </table>
+            </div>
+            <div id="view-books-only" class="tab-view hidden">
+              <table id="books-only-table">
+                <thead>
+                  <tr id="books-only-header-row"></tr>
+                </thead>
+                <tbody id="books-only-body"></tbody>
+              </table>
+            </div>
+            <div id="view-gstr-only" class="tab-view hidden">
+              <table id="gstr-only-table">
+                <thead>
+                  <tr id="gstr-only-header-row"></tr>
+                </thead>
+                <tbody id="gstr-only-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-4"
+      >
+        <p
+          class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+        >
+          © 2026 AJ Innovation & Design • Recon Engine v1.7.0 Stable
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      const state = {
+        books: {
+          rawHeaders: [],
+          rawRows: [],
+          mapping: {},
+          processed: [],
+          rawGrid: null,
+          workbook: null,
+          sheetNames: [],
+          currentSheet: null,
+        },
+        gstr2b: {
+          rawHeaders: [],
+          rawRows: [],
+          mapping: {},
+          processed: [],
+          rawGrid: null,
+          workbook: null,
+          sheetNames: [],
+          currentSheet: null,
+        },
+        results: null,
+        summary: [],
+        chart: null,
+        sourceNames: {
+          books: "PURCHASE LEDGER (BOOKS)",
+          gstr2b: "GSTR-2B (PORTAL)",
+        },
+      };
+
+      function normName(raw) {
+        if (!raw) return "";
+        return String(raw)
+          .toUpperCase()
+          .replace(
+            /\b(PVT\.?\s*LTD\.?|PRIVATE\s+LIMITED|LIMITED|LTD\.?|LLP|INC\.?|CORP\.?|CO\.?|COMPANY|ENTERPRISES?|TRADING|INDIA|AND|&)\b/g,
+            " ",
+          )
+          .replace(/[^A-Z0-9\s]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function normInv(raw) {
+        if (!raw) return "";
+        return String(raw)
+          .replace(/[\s\/\-\\]/g, "")
+          .replace(/[^a-zA-Z0-9]/g, "")
+          .replace(/^0+/, "")
+          .toUpperCase();
+      }
+
+      function nameSimilarityFast(wa, wb) {
+        if (!wa.size || !wb.size) return 0;
+        let overlap = 0;
+        for (const w of wa) {
+          if (wb.has(w)) {
+            overlap++;
+            continue;
+          }
+          for (const ww of wb) {
+            if (
+              w.length >= 3 &&
+              ww.length >= 3 &&
+              (w.startsWith(ww) || ww.startsWith(w))
+            ) {
+              overlap += 0.6;
+              break;
+            }
+          }
+        }
+        return overlap / Math.max(wa.size, wb.size);
+      }
+
+      function invMatchesFast(bn, gn) {
+        if (!bn || !gn) return false;
+        if (bn === gn) return true;
+        for (let len = 4; len <= 8; len++) {
+          const bs = bn.slice(-len);
+          const gs = gn.slice(-len);
+          if (bs && gs && bs === gs && /^\d+$/.test(bs)) return true;
+        }
+        return (
+          gn.endsWith(bn) ||
+          bn.endsWith(gn) ||
+          gn.includes(bn) ||
+          bn.includes(gn)
+        );
+      }
+
+      function numClose(a, b, tol = 1.0) {
+        return Math.abs(a - b) <= tol;
+      }
+
+      const FIELDS = [
+        {
+          id: "supplierName",
+          label: "Supplier Name",
+          keywords: [
+            "supplier name",
+            "name of supplier",
+            "party name",
+            "name",
+            "vendor",
+            "supplier",
+          ],
+        },
+        {
+          id: "gstin",
+          label: "GSTIN of Supplier",
+          keywords: [
+            "gstin of supplier",
+            "gstin/uin",
+            "gstin",
+            "gst no",
+            "gst",
+          ],
+        },
+        {
+          id: "invoiceNo",
+          label: "Invoice Number",
+          keywords: [
+            "invoice number",
+            "inv no",
+            "inv num",
+            "invoice no",
+            "bill no",
+            "invoice",
+            "invn",
+            "inv",
+          ],
+        },
+        {
+          id: "invoiceDate",
+          label: "Invoice Date",
+          keywords: ["invoice date", "inv dat", "inv date", "date", "dated"],
+        },
+        {
+          id: "taxableValue",
+          label: "Taxable Value",
+          keywords: [
+            "taxable value",
+            "taxable amt",
+            "taxable amount",
+            "taxable",
+          ],
+        },
+        {
+          id: "igst",
+          label: "IGST Amount",
+          keywords: ["igst amount", "igst", "integrated tax", "integrated"],
+        },
+        {
+          id: "cgst",
+          label: "CGST Amount",
+          keywords: ["cgst amount", "cgst", "central tax", "central"],
+        },
+        {
+          id: "sgst",
+          label: "SGST / UTGST Amount",
+          keywords: [
+            "sgst / utgst amount",
+            "sgst amount",
+            "sgst",
+            "utgst",
+            "state tax",
+            "sgst/utgst",
+            "state",
+          ],
+        },
+      ];
+
+      function updateSourceNames() {
+        const booksVal = (
+          document.getElementById("source1-name").value || "Source 1"
+        )
+          .trim()
+          .toUpperCase();
+        const gstr2bVal = (
+          document.getElementById("source2-name").value || "Source 2"
+        )
+          .trim()
+          .toUpperCase();
+        document.getElementById("source1-name").value = booksVal;
+        document.getElementById("source2-name").value = gstr2bVal;
+        state.sourceNames.books = booksVal;
+        state.sourceNames.gstr2b = gstr2bVal;
+        document.getElementById("books-drop-text").textContent =
+          `Drop ${state.sourceNames.books} here`;
+        document.getElementById("gstr2b-drop-text").textContent =
+          `Drop ${state.sourceNames.gstr2b} here`;
+        if (state.results) renderResults();
+      }
+
+      function triggerFileInput(type) {
+        document.getElementById(`${type}-file-input`).click();
+      }
+      function setDragOver(e, type) {
+        e.preventDefault();
+        document.getElementById(`${type}-drop`).classList.add("drag");
+      }
+      function cancelDrag(type) {
+        document.getElementById(`${type}-drop`).classList.remove("drag");
+      }
+      function handleFileDrop(e, type) {
+        e.preventDefault();
+        cancelDrag(type);
+        const file = e.dataTransfer.files[0];
+        if (file) processFile(file, type);
+      }
+      function handleFileSelected(e, type) {
+        const file = e.target.files[0];
+        if (file) processFile(file, type);
+      }
+      function resetTrackerUI(type) {
+        document.getElementById(`${type}-drop`).classList.remove("hidden");
+        document.getElementById(`${type}-tracker`).classList.add("hidden");
+        state[type] = {
+          rawHeaders: [],
+          rawRows: [],
+          mapping: {},
+          processed: [],
+          rawGrid: null,
+          workbook: null,
+          sheetNames: [],
+          currentSheet: null,
+        };
+        checkShowMapper();
+      }
+
+      async function processFile(file, type) {
+        const startRow =
+          parseInt(document.getElementById(`${type}-start-row`).value) || 1;
+        document.getElementById(`${type}-drop`).classList.add("hidden");
+        document.getElementById(`${type}-tracker`).classList.remove("hidden");
+        document.getElementById(`${type}-filename`).textContent = file.name;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {
+              type: "array",
+              cellDates: true,
+            });
+            const sheetNames = workbook.SheetNames || [];
+            const firstSheet = sheetNames[0];
+            const rawGrid = XLSX.utils.sheet_to_json(
+              workbook.Sheets[firstSheet],
+              { header: 1, defval: "" },
+            );
+
+            state[type] = {
+              ...state[type],
+              workbook,
+              sheetNames,
+              currentSheet: firstSheet,
+              rawGrid,
+              rawHeaders: rawGrid[startRow - 1] || [],
+              rawRows: rawGrid.slice(startRow),
+            };
+
+            const sheetContainer = document.getElementById(
+              `${type}-sheet-container`,
+            );
+            if (sheetNames.length > 1) {
+              sheetContainer.classList.remove("hidden");
+              sheetContainer.innerHTML = `
+              <div class="flex flex-col"><label class="text-[10px] font-black text-slate-500 uppercase">Select Sheet</label><span class="text-[10px] font-bold text-blue-600">${sheetNames.length} found</span></div>
+              <select onchange="handleSheetChange(this.value, '${type}')" class="border border-slate-200 rounded text-[11px] p-1 font-bold bg-white max-w-[150px] truncate">
+                ${sheetNames.map((name) => `<option value="${name}">${name}</option>`).join("")}
+              </select>`;
+            } else sheetContainer.classList.add("hidden");
+
+            autoMapFields(type);
+            checkShowMapper();
+          } catch (err) {
+            alert(`Error: ${err.message}`);
+            resetTrackerUI(type);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      function handleSheetChange(sheetName, type) {
+        const sheet = state[type].workbook.Sheets[sheetName];
+        state[type].currentSheet = sheetName;
+        state[type].rawGrid = XLSX.utils.sheet_to_json(sheet, {
+          header: 1,
+          defval: "",
+        });
+        reprocessFile(type);
+      }
+
+      function reprocessFile(type) {
+        const startRow =
+          parseInt(document.getElementById(`${type}-start-row`).value) || 1;
+        state[type].rawHeaders = state[type].rawGrid[startRow - 1] || [];
+        state[type].rawRows = state[type].rawGrid.slice(startRow);
+        autoMapFields(type);
+        if (
+          !document
+            .getElementById("field-mapper-container")
+            .classList.contains("hidden")
+        )
+          renderMappingUI();
+      }
+
+      function autoMapFields(type) {
+        const lowerHeaders = state[type].rawHeaders.map((h) =>
+          String(h).toLowerCase().trim(),
+        );
+        const mapping = {};
+        const used = new Set();
+        FIELDS.forEach((field) => {
+          let match = -1;
+
+          // 1. Try exact match first
+          for (const k of field.keywords) {
+            match = lowerHeaders.findIndex(
+              (h, idx) => !used.has(idx) && h === k,
+            );
+            if (match !== -1) break;
+          }
+
+          // 2. Try starts with or includes as fallback
+          if (match === -1) {
+            for (const k of field.keywords) {
+              match = lowerHeaders.findIndex(
+                (h, idx) => !used.has(idx) && h.includes(k),
+              );
+              if (match !== -1) break;
+            }
+          }
+
+          if (match !== -1) {
+            mapping[field.id] = match;
+            used.add(match);
+          }
+        });
+        state[type].mapping = mapping;
+      }
+
+      function checkShowMapper() {
+        const show =
+          state.books.rawHeaders.length > 0 &&
+          state.gstr2b.rawHeaders.length > 0;
+        document
+          .getElementById("mapper-trigger-btn")
+          .classList.toggle("hidden", !show);
+        document
+          .getElementById("field-mapper-container")
+          .classList.toggle("hidden", !show);
+        if (show) renderMappingUI();
+      }
+
+      function toggleFieldMapper() {
+        const container = document.getElementById("field-mapper-container");
+        container.classList.toggle("hidden");
+        document.getElementById("mapper-angle").textContent =
+          container.classList.contains("hidden") ? "▼" : "▲";
+      }
+
+      function renderMappingUI() {
+        ["books", "gstr2b"].forEach((type) => {
+          const list = document.getElementById(`${type}-mapping-list`);
+          list.innerHTML = `<p class="text-[10px] font-black text-slate-400 mb-2 uppercase tracking-tighter">${state.sourceNames[type]} COLUMNS</p>`;
+          FIELDS.forEach((field) => {
+            const currentVal = state[type].mapping[field.id];
+            list.innerHTML += `
+            <div class="flex items-center justify-between gap-4">
+              <label class="text-[11px] font-bold text-slate-600 truncate">${field.label}</label>
+              <select onchange="state['${type}'].mapping['${field.id}'] = this.value === '' ? undefined : parseInt(this.value)" 
+                      class="text-[11px] font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1.5 w-48">
+                <option value="">-- Not Mapped --</option>
+                ${state[type].rawHeaders.map((h, idx) => `<option value="${idx}" ${idx === currentVal ? "selected" : ""}>Col ${idx + 1}: ${h}</option>`).join("")}
+              </select>
+            </div>`;
+          });
+        });
+      }
+
+      function runReconciliation() {
+        document
+          .getElementById("processing-overlay")
+          .classList.remove("hidden");
+        setTimeout(() => {
+          try {
+            const pb = processSourceData("books");
+            const pg = processSourceData("gstr2b");
+            const res = {
+              matched: [],
+              amountDiffers: [],
+              notIn2B: [],
+              notInBooks: [],
+            };
+
+            const matchingMode =
+              document.getElementById("match-level-mode").value;
+            let tiersSelected = [];
+            if (matchingMode === "auto") {
+              tiersSelected = [1, 2, 3, 4, 5];
+            } else if (matchingMode === "tier1") {
+              tiersSelected = [1];
+            } else if (matchingMode === "tier2") {
+              tiersSelected = [2];
+            } else if (matchingMode === "tier3") {
+              tiersSelected = [3];
+            } else if (matchingMode === "tier4") {
+              tiersSelected = [4];
+            } else {
+              tiersSelected = [5];
+            }
+
+            const usedB = new Set();
+            const usedG = new Set();
+
+            for (const tier of tiersSelected) {
+              for (let b = 0; b < pb.length; b++) {
+                if (usedB.has(b)) continue;
+                const bRow = pb[b];
+
+                let bestGIdx = -1;
+                let bestNameSim = -1;
+                let bestTaxMatch = false;
+
+                for (let g = 0; g < pg.length; g++) {
+                  if (usedG.has(g)) continue;
+                  const gRow = pg[g];
+
+                  const taxMatch = numClose(
+                    bRow.taxableValue,
+                    gRow.taxableValue,
+                    1.5,
+                  );
+
+                  let nameMatch = false;
+                  let nameSim = 0;
+                  if (bRow._normName && gRow._normName) {
+                    if (bRow._normName === gRow._normName) {
+                      nameSim = 1.0;
+                      nameMatch = true;
+                    } else {
+                      nameSim = nameSimilarityFast(
+                        bRow._nameWords,
+                        gRow._nameWords,
+                      );
+                      nameMatch = nameSim >= 0.45;
+                    }
+                  }
+
+                  const dateMatch = !!(
+                    bRow.invoiceDate &&
+                    gRow.invoiceDate &&
+                    bRow.invoiceDate === gRow.invoiceDate
+                  );
+
+                  const isDummyB = bRow.invoiceNo.startsWith("Row-");
+                  const isDummyG = gRow.invoiceNo.startsWith("Row-");
+                  const invMatch =
+                    !isDummyB &&
+                    !isDummyG &&
+                    invMatchesFast(bRow._normInv, gRow._normInv);
+
+                  let matchTriggered = false;
+                  if (tier === 1 && taxMatch && nameMatch && dateMatch)
+                    matchTriggered = true;
+                  else if (tier === 2 && taxMatch && nameMatch)
+                    matchTriggered = true;
+                  else if (tier === 3 && taxMatch && dateMatch)
+                    matchTriggered = true;
+                  else if (tier === 4 && invMatch && taxMatch)
+                    matchTriggered = true;
+                  else if (tier === 5 && invMatch) matchTriggered = true;
+
+                  if (matchTriggered) {
+                    if (nameSim >= bestNameSim) {
+                      bestNameSim = nameSim;
+                      bestGIdx = g;
+                      bestTaxMatch = taxMatch;
+                    }
+                  }
+                }
+
+                if (bestGIdx !== -1) {
+                  usedB.add(b);
+                  usedG.add(bestGIdx);
+                  const gRow = pg[bestGIdx];
+                  const gstOk = numClose(bRow.totalGst, gRow.totalGst, 1.5);
+
+                  if (bestTaxMatch && gstOk) {
+                    res.matched.push({
+                      books: bRow,
+                      gstr2b: gRow,
+                      nameSim: bestNameSim,
+                      tier,
+                    });
+                  } else {
+                    res.amountDiffers.push({
+                      books: bRow,
+                      gstr2b: gRow,
+                      nameSim: bestNameSim,
+                      tier,
+                      taxDiff: gRow.taxableValue - bRow.taxableValue,
+                      gstDiff: gRow.totalGst - bRow.totalGst,
+                    });
+                  }
+                }
+              }
+            }
+
+            for (let b = 0; b < pb.length; b++) {
+              if (!usedB.has(b)) res.notIn2B.push(pb[b]);
+            }
+
+            for (let g = 0; g < pg.length; g++) {
+              if (!usedG.has(g)) res.notInBooks.push(pg[g]);
+            }
+
+            state.results = res;
+            calculateSummary();
+            renderResults();
+            document
+              .getElementById("results-viewport")
+              .classList.remove("hidden");
+            document
+              .getElementById("runtime-controls")
+              .classList.remove("hidden");
+            window.scrollTo({
+              top: document.getElementById("results-viewport").offsetTop - 20,
+              behavior: "smooth",
+            });
+          } catch (err) {
+            console.error(err);
+            alert("Reconciliation error. Check mappings.");
+          } finally {
+            document
+              .getElementById("processing-overlay")
+              .classList.add("hidden");
+          }
+        }, 800);
+      }
+
+      function processSourceData(type) {
+        const mapping = state[type].mapping;
+        return state[type].rawRows
+          .filter((row) => row[mapping.invoiceNo])
+          .map((row) => {
+            const getVal = (fid) => {
+              const idx = mapping[fid];
+              if (idx === undefined) return 0;
+              const val = row[idx];
+              return typeof val === "number"
+                ? val
+                : parseFloat(String(val).replace(/,/g, "")) || 0;
+            };
+            const t = getVal("taxableValue"),
+              i = getVal("igst"),
+              c = getVal("cgst"),
+              s = getVal("sgst");
+            const supplierName = row[mapping.supplierName] || "Unknown";
+            const invoiceNo = String(row[mapping.invoiceNo]);
+            const _normNameVal = normName(supplierName);
+            return {
+              supplierName: supplierName,
+              gstin: row[mapping.gstin] || "N/A",
+              invoiceNo: invoiceNo,
+              invoiceDate:
+                row[mapping.invoiceDate] instanceof Date
+                  ? row[mapping.invoiceDate].toLocaleDateString("en-IN")
+                  : String(row[mapping.invoiceDate] || "N/A"),
+              taxableValue: t,
+              igst: i,
+              cgst: c,
+              sgst: s,
+              totalGst: i + c + s,
+              _normInv: normInv(invoiceNo),
+              _normName: _normNameVal,
+              _nameWords: new Set(
+                _normNameVal
+                  ? _normNameVal.split(" ").filter((w) => w.length > 1)
+                  : [],
+              ),
+            };
+          });
+      }
+
+      function calculateSummary() {
+        const res = state.results;
+        const sum = (arr, key, subKey) =>
+          arr.reduce((a, b) => a + (subKey ? b[subKey][key] : b[key]), 0);
+
+        const booksTotal = {
+          tv:
+            sum(res.matched, "taxableValue", "books") +
+            sum(res.amountDiffers, "taxableValue", "books") +
+            sum(res.notIn2B, "taxableValue"),
+          ig:
+            sum(res.matched, "igst", "books") +
+            sum(res.amountDiffers, "igst", "books") +
+            sum(res.notIn2B, "igst"),
+          cg:
+            sum(res.matched, "cgst", "books") +
+            sum(res.amountDiffers, "cgst", "books") +
+            sum(res.notIn2B, "cgst"),
+          sg:
+            sum(res.matched, "sgst", "books") +
+            sum(res.amountDiffers, "sgst", "books") +
+            sum(res.notIn2B, "sgst"),
+        };
+
+        const gstrTotal = {
+          tv:
+            sum(res.matched, "taxableValue", "gstr2b") +
+            sum(res.amountDiffers, "taxableValue", "gstr2b") +
+            sum(res.notInBooks, "taxableValue"),
+          ig:
+            sum(res.matched, "igst", "gstr2b") +
+            sum(res.amountDiffers, "igst", "gstr2b") +
+            sum(res.notInBooks, "igst"),
+          cg:
+            sum(res.matched, "cgst", "gstr2b") +
+            sum(res.amountDiffers, "cgst", "gstr2b") +
+            sum(res.notInBooks, "cgst"),
+          sg:
+            sum(res.matched, "sgst", "gstr2b") +
+            sum(res.amountDiffers, "sgst", "gstr2b") +
+            sum(res.notInBooks, "sgst"),
+        };
+
+        const portalHigher = {
+          tv: res.amountDiffers.reduce(
+            (a, b) =>
+              a + Math.max(0, b.gstr2b.taxableValue - b.books.taxableValue),
+            0,
+          ),
+          ig: res.amountDiffers.reduce(
+            (a, b) => a + Math.max(0, b.gstr2b.igst - b.books.igst),
+            0,
+          ),
+          cg: res.amountDiffers.reduce(
+            (a, b) => a + Math.max(0, b.gstr2b.cgst - b.books.cgst),
+            0,
+          ),
+          sg: res.amountDiffers.reduce(
+            (a, b) => a + Math.max(0, b.gstr2b.sgst - b.books.sgst),
+            0,
+          ),
+        };
+
+        const booksHigher = {
+          tv: res.amountDiffers.reduce(
+            (a, b) =>
+              a + Math.max(0, b.books.taxableValue - b.gstr2b.taxableValue),
+            0,
+          ),
+          ig: res.amountDiffers.reduce(
+            (a, b) => a + Math.max(0, b.books.igst - b.gstr2b.igst),
+            0,
+          ),
+          cg: res.amountDiffers.reduce(
+            (a, b) => a + Math.max(0, b.books.cgst - b.gstr2b.cgst),
+            0,
+          ),
+          sg: res.amountDiffers.reduce(
+            (a, b) => a + Math.max(0, b.books.sgst - b.gstr2b.sgst),
+            0,
+          ),
+        };
+
+        state.summary = [
+          {
+            label: `Input invoices as per accounts (${state.sourceNames.books})`,
+            ...booksTotal,
+            type: "header",
+          },
+          { label: "Add:", type: "subheader" },
+          {
+            label: `• Input invoices in ${state.sourceNames.gstr2b} not in accounts`,
+            tv: sum(res.notInBooks, "taxableValue"),
+            ig: sum(res.notInBooks, "igst"),
+            cg: sum(res.notInBooks, "cgst"),
+            sg: sum(res.notInBooks, "sgst"),
+            indent: true,
+          },
+          {
+            label: "• Reverse Charge (Inward RCM)",
+            tv: 0,
+            ig: 0,
+            cg: 0,
+            sg: 0,
+            indent: true,
+          },
+          {
+            label: "• Expenses / Other capital credits",
+            tv: 0,
+            ig: 0,
+            cg: 0,
+            sg: 0,
+            indent: true,
+          },
+          {
+            label: "• Amount Difference in Accounts (Portal higher)",
+            ...portalHigher,
+            indent: true,
+          },
+          { label: "Less:", type: "subheader" },
+          {
+            label: `• Input invoices in accounts not in ${state.sourceNames.gstr2b}`,
+            tv: sum(res.notIn2B, "taxableValue"),
+            ig: sum(res.notIn2B, "igst"),
+            cg: sum(res.notIn2B, "cgst"),
+            sg: sum(res.notIn2B, "sgst"),
+            indent: true,
+          },
+          {
+            label: "• Amount Difference in Accounts (Books higher)",
+            ...booksHigher,
+            indent: true,
+          },
+          {
+            label: "• Input invoice amended / credits reversed",
+            tv: 0,
+            ig: 0,
+            cg: 0,
+            sg: 0,
+            indent: true,
+          },
+          {
+            label: "Input invoices as per calculation (Reconciled)",
+            tv:
+              booksTotal.tv +
+              sum(res.notInBooks, "taxableValue") +
+              portalHigher.tv -
+              sum(res.notIn2B, "taxableValue") -
+              booksHigher.tv,
+            ig:
+              booksTotal.ig +
+              sum(res.notInBooks, "igst") +
+              portalHigher.ig -
+              sum(res.notIn2B, "igst") -
+              booksHigher.ig,
+            cg:
+              booksTotal.cg +
+              sum(res.notInBooks, "cgst") +
+              portalHigher.cg -
+              sum(res.notIn2B, "cgst") -
+              booksHigher.cg,
+            sg:
+              booksTotal.sg +
+              sum(res.notInBooks, "sgst") +
+              portalHigher.sg -
+              sum(res.notIn2B, "sgst") -
+              booksHigher.sg,
+            type: "total",
+          },
+          {
+            label: `Input invoices as per ${state.sourceNames.gstr2b} (Actual Total)`,
+            ...gstrTotal,
+            type: "total",
+          },
+          {
+            label: "Difference (Calculated vs Portal)",
+            tv:
+              booksTotal.tv +
+              sum(res.notInBooks, "taxableValue") +
+              portalHigher.tv -
+              sum(res.notIn2B, "taxableValue") -
+              booksHigher.tv -
+              gstrTotal.tv,
+            ig:
+              booksTotal.ig +
+              sum(res.notInBooks, "igst") +
+              portalHigher.ig -
+              sum(res.notIn2B, "igst") -
+              booksHigher.ig -
+              gstrTotal.ig,
+            cg:
+              booksTotal.cg +
+              sum(res.notInBooks, "cgst") +
+              portalHigher.cg -
+              sum(res.notIn2B, "cgst") -
+              booksHigher.cg -
+              gstrTotal.cg,
+            sg:
+              booksTotal.sg +
+              sum(res.notInBooks, "sgst") +
+              portalHigher.sg -
+              sum(res.notIn2B, "sgst") -
+              booksHigher.sg -
+              gstrTotal.sg,
+            type: "diff",
+          },
+        ];
+      }
+
+      function renderResults() {
+        const res = state.results,
+          tc =
+            res.matched.length +
+            res.amountDiffers.length +
+            res.notIn2B.length +
+            res.notInBooks.length;
+        document.getElementById("stat-total-count").textContent = tc;
+        document.getElementById("stat-matched-count").textContent =
+          res.matched.length;
+        document.getElementById("stat-matched-pct").textContent = tc
+          ? Math.round((res.matched.length / tc) * 100) + "%"
+          : "0%";
+        document.getElementById("stat-diff-count").textContent =
+          res.amountDiffers.length;
+        document.getElementById("stat-missing-count").textContent =
+          res.notIn2B.length + res.notInBooks.length;
+        document.getElementById("tab-books-only-btn").textContent =
+          `📕 MISSING IN ${state.sourceNames.gstr2b.toUpperCase()}`;
+        document.getElementById("tab-gstr-only-btn").textContent =
+          `📘 MISSING IN ${state.sourceNames.books.toUpperCase()}`;
+        renderSummary();
+        renderChart();
+        renderDataTable("matched", res.matched, true);
+        renderDataTable("diff", res.amountDiffers, true, true);
+        renderDataTable("books-only", res.notIn2B, false);
+        renderDataTable("gstr-only", res.notInBooks, false);
+      }
+
+      function renderSummary() {
+        const tbody = document.getElementById("summary-body");
+        tbody.innerHTML = "";
+        state.summary.forEach((s) => {
+          const tr = document.createElement("tr");
+          if (s.type === "header") tr.className = "summary-section";
+          else if (s.type === "total") tr.className = "summary-total";
+          else if (s.type === "diff") tr.className = "summary-diff";
+          else if (s.indent) tr.className = "summary-indent";
+          const f = (v) =>
+            s.type === "subheader"
+              ? ""
+              : v.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                });
+          tr.innerHTML = `<td>${s.label}</td><td class="text-right">${f(s.tv || 0)}</td><td class="text-right">${f(s.ig || 0)}</td><td class="text-right">${f(s.cg || 0)}</td><td class="text-right">${f(s.sg || 0)}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function renderDataTable(id, data, isComp, isDiff) {
+        const head = document.getElementById(`${id}-header-row`),
+          body = document.getElementById(`${id}-body`);
+        let hs = isComp
+          ? [
+              `Supplier (${state.sourceNames.books})`,
+              "Inv No (Tier)",
+              "Taxable",
+              "GST",
+              `Supplier (${state.sourceNames.gstr2b})`,
+              "Inv No",
+              "Taxable",
+              "GST",
+            ]
+          : [
+              "Supplier Name",
+              "GSTIN",
+              "Inv No",
+              "Date",
+              "Taxable",
+              "IGST",
+              "CGST",
+              "SGST",
+              "Total",
+            ];
+        if (isDiff) hs.push("Tax Diff", "GST Diff");
+        head.innerHTML = hs.map((h) => `<th>${h}</th>`).join("");
+        body.innerHTML = data
+          .map((item) => {
+            let tierLabel = "";
+            if (item.tier) {
+              let color = "bg-slate-100 text-slate-800 border-slate-200";
+              if (item.tier === 1)
+                color = "bg-emerald-100 text-emerald-800 border-emerald-200";
+              else if (item.tier === 2)
+                color = "bg-amber-100 text-amber-800 border-amber-200";
+              else if (item.tier === 3)
+                color = "bg-indigo-100 text-indigo-800 border-indigo-200";
+              else if (item.tier === 4)
+                color = "bg-sky-100 text-sky-800 border-sky-200";
+              else if (item.tier === 5)
+                color = "bg-purple-100 text-purple-800 border-purple-200";
+              tierLabel = `<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-black w-max border ${color}">Tier ${item.tier}</span>`;
+            }
+
+            let cs = isComp
+              ? [
+                  item.books.supplierName,
+                  `<div class="flex flex-col gap-0.5"><span>${item.books.invoiceNo}</span>${tierLabel}</div>`,
+                  item.books.taxableValue.toFixed(2),
+                  item.books.totalGst.toFixed(2),
+                  item.gstr2b.supplierName,
+                  item.gstr2b.invoiceNo,
+                  item.gstr2b.taxableValue.toFixed(2),
+                  item.gstr2b.totalGst.toFixed(2),
+                ]
+              : [
+                  item.supplierName,
+                  item.gstin,
+                  item.invoiceNo,
+                  item.invoiceDate,
+                  item.taxableValue.toFixed(2),
+                  item.igst.toFixed(2),
+                  item.cgst.toFixed(2),
+                  item.sgst.toFixed(2),
+                  item.totalGst.toFixed(2),
+                ];
+            if (isDiff)
+              cs.push(
+                `<span class="font-bold ${item.taxDiff !== 0 ? "text-red-600" : ""}">${item.taxDiff.toFixed(2)}</span>`,
+                `<span class="font-bold ${item.gstDiff !== 0 ? "text-red-600" : ""}">${item.gstDiff.toFixed(2)}</span>`,
+              );
+            return `<tr>${cs.map((c) => `<td>${c}</td>`).join("")}</tr>`;
+          })
+          .join("");
+      }
+
+      function renderChart() {
+        const ctx = document.getElementById("reconChart").getContext("2d");
+        if (state.chart) state.chart.destroy();
+        const res = state.results;
+        state.chart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: [
+              "Matched",
+              "Variance",
+              `Missing in ${state.sourceNames.gstr2b}`,
+              `Missing in ${state.sourceNames.books}`,
+            ],
+            datasets: [
+              {
+                data: [
+                  res.matched.length,
+                  res.amountDiffers.length,
+                  res.notIn2B.length,
+                  res.notInBooks.length,
+                ],
+                backgroundColor: ["#10b981", "#f59e0b", "#ef4444", "#6366f1"],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "70%",
+          },
+        });
+      }
+
+      function switchTab(tab) {
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) =>
+            b.classList.toggle("active", b.id === `tab-${tab}-btn`),
+          );
+        document
+          .querySelectorAll(".tab-view")
+          .forEach((v) => v.classList.toggle("hidden", v.id !== `view-${tab}`));
+      }
+
+      async function exportReconciliationReport(customName, useFileSystem) {
+        if (!state.results) return;
+        const r = state.results;
+        const booksInvoices = processSourceData("books");
+        const g2bInvoices = processSourceData("gstr2b");
+        const wb = XLSX.utils.book_new();
+
+        const N_matched = r.matched.length;
+        const N_diff = r.amountDiffers.length;
+        const N_ni2b = r.notIn2B.length;
+        const N_nib = r.notInBooks.length;
+
+        const applyStylesToSheet = (
+          ws,
+          headerRowsCount = 1,
+          isSummary = false,
+        ) => {
+          if (!ws || !ws["!ref"]) return;
+          const range = XLSX.utils.decode_range(ws["!ref"]);
+
+          const colWidths = [];
+          const rowHeights = [];
+          const gstinCols = new Set();
+
+          for (let C = range.s.c; C <= range.e.c; C++) colWidths[C] = 11;
+
+          for (let R = range.s.r; R <= range.e.r; R++) {
+            let height = 21;
+            if (R < headerRowsCount) {
+              height = isSummary && R === 0 ? 32 : 27;
+            } else {
+              const firstCellRef = XLSX.utils.encode_cell({
+                r: R,
+                c: range.s.c,
+              });
+              const firstCell = ws[firstCellRef];
+              if (
+                firstCell &&
+                String(firstCell.v).toUpperCase().includes("TOTAL")
+              ) {
+                height = 24;
+              }
+            }
+
+            if (isSummary) {
+              if (R === 0) height = 36;
+              else if (R === 1) height = 28;
+              else height = 22;
+            }
+            rowHeights.push({ hpt: height });
+
+            for (let C = range.s.c; C <= range.e.c; C++) {
+              const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+              const cell = ws[cellRef];
+              if (cell) {
+                const isNumeric = cell.t === "n" || typeof cell.v === "number";
+                if (isNumeric)
+                  cell.z = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)';
+
+                let valStr = "";
+                if (cell.v !== undefined && cell.v !== null) {
+                  if (typeof cell.v === "number") {
+                    valStr = cell.v.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    });
+                  } else {
+                    valStr = String(cell.v);
+                  }
+                }
+
+                if (R < headerRowsCount && valStr) {
+                  const valUpper = valStr.toUpperCase().trim();
+                  if (
+                    valUpper.includes("GSTIN") ||
+                    valUpper === "GST" ||
+                    valUpper.includes("GST NO")
+                  ) {
+                    gstinCols.add(C);
+                  }
+                }
+
+                if (valStr.length > colWidths[C]) {
+                  colWidths[C] = valStr.length;
+                }
+
+                let isBold = false;
+                let rowBg = "FFFFFF";
+                let borderStyle = {
+                  top: { style: "thin", color: { rgb: "E2E8F0" } },
+                  bottom: { style: "thin", color: { rgb: "E2E8F0" } },
+                  left: { style: "thin", color: { rgb: "E2E8F0" } },
+                  right: { style: "thin", color: { rgb: "E2E8F0" } },
+                };
+
+                if (isSummary && R >= headerRowsCount) {
+                  const isHeading = R === 2 || R === 6 || R === 10 || R === 11;
+                  const isCalculationTotal = R === 13;
+                  const isActualTotal = R === 14;
+                  const isDifference = R === 15;
+
+                  if (isHeading) {
+                    isBold = true;
+                    rowBg = "F8FAFC";
+                  } else if (isCalculationTotal) {
+                    isBold = true;
+                    rowBg = "F1F5F9";
+                    borderStyle.top = {
+                      style: "thin",
+                      color: { rgb: "94A3B8" },
+                    };
+                    borderStyle.bottom = {
+                      style: "thin",
+                      color: { rgb: "94A3B8" },
+                    };
+                  } else if (isActualTotal) {
+                    isBold = true;
+                    rowBg = "E2E8F0";
+                    borderStyle.top = {
+                      style: "thin",
+                      color: { rgb: "475569" },
+                    };
+                    borderStyle.bottom = {
+                      style: "medium",
+                      color: { rgb: "475569" },
+                    };
+                  } else if (isDifference) {
+                    isBold = true;
+                    rowBg = "F8FAFC";
+                    borderStyle.top = {
+                      style: "thin",
+                      color: { rgb: "94A3B8" },
+                    };
+                    borderStyle.bottom = {
+                      style: "double",
+                      color: { rgb: "000000" },
+                    };
+                  }
+
+                  cell.s = {
+                    font: {
+                      bold: isBold,
+                      name: "Calisto MT",
+                      sz:
+                        isCalculationTotal || isActualTotal || isDifference
+                          ? 10
+                          : 9,
+                    },
+                    fill: { fgColor: { rgb: rowBg } },
+                    alignment: {
+                      wrapText: true,
+                      horizontal: C === 0 ? "left" : "right",
+                      vertical: "center",
+                      wrapText: C === 0,
+                    },
+                    border: borderStyle,
+                  };
+                } else {
+                  if (R < headerRowsCount) {
+                    cell.s = {
+                      fill: { fgColor: { rgb: "E2E8F0" } },
+                      font: {
+                        bold: true,
+                        color: { rgb: "0F172A" },
+                        name: "Calisto MT",
+                        sz: 10,
+                      },
+                      alignment: {
+                        wrapText: true,
+                        horizontal: "center",
+                        vertical: "center",
+                        wrapText: true,
+                      },
+                      border: {
+                        top: { style: "thin", color: { rgb: "94A3B8" } },
+                        bottom: { style: "medium", color: { rgb: "94A3B8" } },
+                        left: { style: "thin", color: { rgb: "94A3B8" } },
+                        right: { style: "thin", color: { rgb: "94A3B8" } },
+                      },
+                    };
+                  } else {
+                    const firstCellRef = XLSX.utils.encode_cell({
+                      r: R,
+                      c: range.s.c,
+                    });
+                    const firstCell = ws[firstCellRef];
+                    const isTotalRow =
+                      firstCell &&
+                      String(firstCell.v).toUpperCase().includes("TOTAL");
+
+                    if (isTotalRow) {
+                      cell.s = {
+                        font: { bold: true, name: "Calisto MT", sz: 10 },
+                        fill: { fgColor: { rgb: "F1F5F9" } },
+                        border: {
+                          top: { style: "thin", color: { rgb: "94A3B8" } },
+                          bottom: { style: "double", color: { rgb: "475569" } },
+                          left: { style: "thin", color: { rgb: "E2E8F0" } },
+                          right: { style: "thin", color: { rgb: "E2E8F0" } },
+                        },
+                        alignment: {
+                          wrapText: true,
+                          vertical: "center",
+                          horizontal: "right",
+                        },
+                      };
+                    } else {
+                      cell.s = {
+                        font: { name: "Calisto MT", sz: 9 },
+                        alignment: {
+                          wrapText: true,
+                          vertical: "center",
+                          horizontal: isNumeric ? "right" : "left",
+                        },
+                        border: {
+                          top: { style: "thin", color: { rgb: "E2E8F0" } },
+                          bottom: { style: "thin", color: { rgb: "E2E8F0" } },
+                          left: { style: "thin", color: { rgb: "E2E8F0" } },
+                          right: { style: "thin", color: { rgb: "E2E8F0" } },
+                        },
+                      };
+                    }
+                  }
+                }
+              }
+            }
+          }
+          ws["!cols"] = colWidths.map((w, colIdx) => {
+            if (isSummary && colIdx === 0) {
+              return { wch: 55 };
+            }
+            if (gstinCols.has(colIdx)) {
+              return { wch: Math.max(w + 4, 18) };
+            }
+            return { wch: Math.min(Math.max(w + 3, 11), 50) };
+          });
+          ws["!rows"] = rowHeights;
+        };
+
+        const mH1 = [
+          state.sourceNames.books.toUpperCase(),
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          state.sourceNames.gstr2b.toUpperCase(),
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ];
+        const mH2 = [
+          "Supplier Name",
+          "GSTIN of Supplier",
+          "Invoice Number",
+          "Invoice Date",
+          "Taxable Value",
+          "IGST Amount",
+          "CGST Amount",
+          "SGST / UTGST Amount",
+          "Invoice Value",
+          "Supplier Name",
+          "GSTIN of Supplier",
+          "Invoice Number",
+          "Invoice Date",
+          "Taxable Value",
+          "IGST Amount",
+          "CGST Amount",
+          "SGST / UTGST Amount",
+          "Invoice Value",
+        ];
+        const mRows = r.matched.map((m, i) => {
+          const row = i + 3;
+          const booksVal = (m.books.taxableValue || 0) + (m.books.igst || 0) + (m.books.cgst || 0) + (m.books.sgst || 0);
+          const gstr2bVal = (m.gstr2b.taxableValue || 0) + (m.gstr2b.igst || 0) + (m.gstr2b.cgst || 0) + (m.gstr2b.sgst || 0);
+          return [
+            m.books.supplierName || "",
+            m.books.gstin || "",
+            m.books.invoiceNo,
+            m.books.invoiceDate || "",
+            m.books.taxableValue,
+            m.books.igst,
+            m.books.cgst,
+            m.books.sgst,
+            { t: "n", v: booksVal, f: `=E${row}+F${row}+G${row}+H${row}` },
+            m.gstr2b.supplierName || "",
+            m.gstr2b.gstin || "",
+            m.gstr2b.invoiceNo,
+            m.gstr2b.invoiceDate || "",
+            m.gstr2b.taxableValue,
+            m.gstr2b.igst,
+            m.gstr2b.cgst,
+            m.gstr2b.sgst,
+            { t: "n", v: gstr2bVal, f: `=N${row}+O${row}+P${row}+Q${row}` },
+          ];
+        });
+
+        const wsMatched = XLSX.utils.aoa_to_sheet([mH1, mH2, ...mRows]);
+        wsMatched["!merges"] = [
+          { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+          { s: { r: 0, c: 9 }, e: { r: 0, c: 17 } },
+        ];
+
+        const createSubtotalCell = (columnLetter, startRow, endRow) => ({
+          t: "n",
+          f: `=SUM(${columnLetter}${startRow}:${columnLetter}${endRow})`,
+        });
+
+        const matchedTotalRowIdx = N_matched + 3;
+        if (N_matched > 0) {
+          wsMatched[`A${matchedTotalRowIdx}`] = { t: "s", v: "TOTAL" };
+          wsMatched[`E${matchedTotalRowIdx}`] = createSubtotalCell("E", 3, N_matched + 2);
+          wsMatched[`F${matchedTotalRowIdx}`] = createSubtotalCell("F", 3, N_matched + 2);
+          wsMatched[`G${matchedTotalRowIdx}`] = createSubtotalCell("G", 3, N_matched + 2);
+          wsMatched[`H${matchedTotalRowIdx}`] = createSubtotalCell("H", 3, N_matched + 2);
+          wsMatched[`I${matchedTotalRowIdx}`] = createSubtotalCell("I", 3, N_matched + 2);
+
+          wsMatched[`N${matchedTotalRowIdx}`] = createSubtotalCell("N", 3, N_matched + 2);
+          wsMatched[`O${matchedTotalRowIdx}`] = createSubtotalCell("O", 3, N_matched + 2);
+          wsMatched[`P${matchedTotalRowIdx}`] = createSubtotalCell("P", 3, N_matched + 2);
+          wsMatched[`Q${matchedTotalRowIdx}`] = createSubtotalCell("Q", 3, N_matched + 2);
+          wsMatched[`R${matchedTotalRowIdx}`] = createSubtotalCell("R", 3, N_matched + 2);
+          wsMatched["!ref"] = `A1:R${matchedTotalRowIdx}`;
+        } else {
+          wsMatched[`A3`] = { t: "s", v: "TOTAL" };
+          ["E", "F", "G", "H", "I", "N", "O", "P", "Q", "R"].forEach((col) => {
+            wsMatched[`${col}3`] = { t: "n", v: 0 };
+          });
+          wsMatched["!ref"] = `A1:R3`;
+        }
+        applyStylesToSheet(wsMatched, 2, false);
+
+        const adH2 = [
+          "Supplier (Books)",
+          "Invoice No",
+          "Date (Books)",
+          "Taxable (Books)",
+          "IGST (Books)",
+          "CGST (Books)",
+          "SGST (Books)",
+          "GST (Books)",
+          "Supplier (2B)",
+          "Invoice No (2B)",
+          "Date (2B)",
+          "Taxable (2B)",
+          "IGST (2B)",
+          "CGST (2B)",
+          "SGST (2B)",
+          "GST (2B)",
+          "Taxable Diff",
+          "GST Diff",
+        ];
+        const adRows = r.amountDiffers.map((m, i) => {
+          const row = i + 2;
+          return [
+            m.books.supplierName || "",
+            m.books.invoiceNo,
+            m.books.invoiceDate || "",
+            m.books.taxableValue,
+            m.books.igst,
+            m.books.cgst,
+            m.books.sgst,
+            { t: "n", f: `=E${row}+F${row}+G${row}` },
+            m.gstr2b.supplierName || "",
+            m.gstr2b.invoiceNo,
+            m.gstr2b.invoiceDate || "",
+            m.gstr2b.taxableValue,
+            m.gstr2b.igst,
+            m.gstr2b.cgst,
+            m.gstr2b.sgst,
+            { t: "n", f: `=M${row}+N${row}+O${row}` },
+            { t: "n", f: `=L${row}-D${row}` },
+            { t: "n", f: `=P${row}-H${row}` },
+          ];
+        });
+        const wsDiff = XLSX.utils.aoa_to_sheet([adH2, ...adRows]);
+        const diffTotalRowIdx = N_diff + 2;
+        if (N_diff > 0) {
+          wsDiff[`A${diffTotalRowIdx}`] = { t: "s", v: "TOTAL" };
+          wsDiff[`D${diffTotalRowIdx}`] = createSubtotalCell(
+            "D",
+            2,
+            N_diff + 1,
+          );
+          wsDiff[`E${diffTotalRowIdx}`] = createSubtotalCell(
+            "E",
+            2,
+            N_diff + 1,
+          );
+          wsDiff[`F${diffTotalRowIdx}`] = createSubtotalCell(
+            "F",
+            2,
+            N_diff + 1,
+          );
+          wsDiff[`G${diffTotalRowIdx}`] = createSubtotalCell(
+            "G",
+            2,
+            N_diff + 1,
+          );
+          wsDiff[`K${diffTotalRowIdx}`] = createSubtotalCell(
+            "K",
+            2,
+            N_diff + 1,
+          );
+          wsDiff[`L${diffTotalRowIdx}`] = createSubtotalCell(
+            "L",
+            2,
+            N_diff + 1,
+          );
+          wsDiff[`M${diffTotalRowIdx}`] = createSubtotalCell(
+            "M",
+            2,
+            N_diff + 1,
+          );
+          wsDiff[`N${diffTotalRowIdx}`] = createSubtotalCell(
+            "N",
+            2,
+            N_diff + 1,
+          );
+          wsDiff[`O${diffTotalRowIdx}`] = createSubtotalCell(
+            "O",
+            2,
+            N_diff + 1,
+          );
+          wsDiff["!ref"] = `A1:R${diffTotalRowIdx}`;
+        } else {
+          wsDiff[`A2`] = { t: "s", v: "TOTAL" };
+          ["C", "D", "E", "F", "G", "J", "K", "L", "M", "N", "O", "P"].forEach(
+            (col) => {
+              wsDiff[`${col}2`] = { t: "n", v: 0 };
+            },
+          );
+          wsDiff["!ref"] = `A1:R2`;
+        }
+        applyStylesToSheet(wsDiff, 1, false);
+
+        const standardHeaders = [
+          "Supplier Name",
+          "GSTIN",
+          "Invoice No",
+          "Invoice Date",
+          "Taxable Value",
+          "IGST",
+          "CGST",
+          "SGST",
+          "GST Amount",
+        ];
+        const ni2bRows = r.notIn2B.map((row, i) => {
+          const rIdx = i + 2;
+          return [
+            row.supplierName || "",
+            row.gstin || "",
+            row.invoiceNo,
+            row.invoiceDate || "",
+            row.taxableValue,
+            row.igst,
+            row.cgst,
+            row.sgst,
+            { t: "n", f: `=F${rIdx}+G${rIdx}+H${rIdx}` },
+          ];
+        });
+        const wsNotIn2B = XLSX.utils.aoa_to_sheet([
+          standardHeaders,
+          ...ni2bRows,
+        ]);
+        const ni2bTotalRowIdx = N_ni2b + 2;
+        if (N_ni2b > 0) {
+          wsNotIn2B[`A${ni2bTotalRowIdx}`] = { t: "s", v: "TOTAL" };
+          wsNotIn2B[`E${ni2bTotalRowIdx}`] = createSubtotalCell(
+            "E",
+            2,
+            N_ni2b + 1,
+          );
+          wsNotIn2B[`F${ni2bTotalRowIdx}`] = createSubtotalCell(
+            "F",
+            2,
+            N_ni2b + 1,
+          );
+          wsNotIn2B[`G${ni2bTotalRowIdx}`] = createSubtotalCell(
+            "G",
+            2,
+            N_ni2b + 1,
+          );
+          wsNotIn2B[`H${ni2bTotalRowIdx}`] = createSubtotalCell(
+            "H",
+            2,
+            N_ni2b + 1,
+          );
+          wsNotIn2B[`I${ni2bTotalRowIdx}`] = createSubtotalCell(
+            "I",
+            2,
+            N_ni2b + 1,
+          );
+          wsNotIn2B["!ref"] = `A1:I${ni2bTotalRowIdx}`;
+        } else {
+          wsNotIn2B[`A2`] = { t: "s", v: "TOTAL" };
+          ["E", "F", "G", "H", "I"].forEach((col) => {
+            wsNotIn2B[`${col}2`] = { t: "n", v: 0 };
+          });
+          wsNotIn2B["!ref"] = `A1:I2`;
+        }
+        applyStylesToSheet(wsNotIn2B, 1, false);
+
+        const nibRows = r.notInBooks.map((row, i) => {
+          const rIdx = i + 2;
+          return [
+            row.supplierName || "",
+            row.gstin || "",
+            row.invoiceNo,
+            row.invoiceDate || "",
+            row.taxableValue,
+            row.igst,
+            row.cgst,
+            row.sgst,
+            { t: "n", f: `=F${rIdx}+G${rIdx}+H${rIdx}` },
+          ];
+        });
+        const wsNotInBooks = XLSX.utils.aoa_to_sheet([
+          standardHeaders,
+          ...nibRows,
+        ]);
+        const nibTotalRowIdx = N_nib + 2;
+        if (N_nib > 0) {
+          wsNotInBooks[`A${nibTotalRowIdx}`] = { t: "s", v: "TOTAL" };
+          wsNotInBooks[`E${nibTotalRowIdx}`] = createSubtotalCell(
+            "E",
+            2,
+            N_nib + 1,
+          );
+          wsNotInBooks[`F${nibTotalRowIdx}`] = createSubtotalCell(
+            "F",
+            2,
+            N_nib + 1,
+          );
+          wsNotInBooks[`G${nibTotalRowIdx}`] = createSubtotalCell(
+            "G",
+            2,
+            N_nib + 1,
+          );
+          wsNotInBooks[`H${nibTotalRowIdx}`] = createSubtotalCell(
+            "H",
+            2,
+            N_nib + 1,
+          );
+          wsNotInBooks[`I${nibTotalRowIdx}`] = createSubtotalCell(
+            "I",
+            2,
+            N_nib + 1,
+          );
+          wsNotInBooks["!ref"] = `A1:I${nibTotalRowIdx}`;
+        } else {
+          wsNotInBooks[`A2`] = { t: "s", v: "TOTAL" };
+          ["E", "F", "G", "H", "I"].forEach((col) => {
+            wsNotInBooks[`${col}2`] = { t: "n", v: 0 };
+          });
+          wsNotInBooks["!ref"] = `A1:I2`;
+        }
+        applyStylesToSheet(wsNotInBooks, 1, false);
+
+        const sumList = (list) => ({
+          tv: list.reduce((a, x) => a + (x.taxableValue || 0), 0),
+          ig: list.reduce((a, x) => a + (x.igst || 0), 0),
+          cg: list.reduce((a, x) => a + (x.cgst || 0), 0),
+          sg: list.reduce((a, x) => a + (x.sgst || 0), 0),
+        });
+
+        const bt = sumList(booksInvoices);
+        const gt = sumList(g2bInvoices);
+        const nib = sumList(r.notInBooks);
+        const ni2b = sumList(r.notIn2B);
+        const adBooks = sumList(r.amountDiffers.map((x) => x.books));
+        const ad2B = sumList(r.amountDiffers.map((x) => x.gstr2b));
+
+        const adj = {
+          tv: ad2B.tv - adBooks.tv,
+          ig: ad2B.ig - adBooks.ig,
+          cg: ad2B.cg - adBooks.cg,
+          sg: ad2B.sg - adBooks.sg,
+        };
+        const calc = {
+          tv: bt.tv + nib.tv + adj.tv - ni2b.tv,
+          ig: bt.ig + nib.ig + adj.ig - ni2b.ig,
+          cg: bt.cg + nib.cg + adj.cg - ni2b.cg,
+          sg: bt.sg + nib.sg + adj.sg - ni2b.sg,
+        };
+        const diff_val = {
+          tv: calc.tv - gt.tv,
+          ig: calc.ig - gt.ig,
+          cg: calc.cg - gt.cg,
+          sg: calc.sg - gt.sg,
+        };
+
+        const titleBanner = [
+          "GST Input Tax Credit (ITC) Reconciliation Working Paper",
+          "",
+          "",
+          "",
+          "",
+        ];
+        const summaryHeaders = [
+          "Particulars",
+          "Taxable Value",
+          "IGST",
+          "CGST",
+          "SGST",
+        ];
+        const summaryRows = [
+          [
+            `Input invoices as per accounts (${state.sourceNames.books})`,
+            bt.tv,
+            bt.ig,
+            bt.cg,
+            bt.sg,
+          ],
+          ["Add:", "", "", "", ""],
+          [
+            `  • Input invoices in ${state.sourceNames.gstr2b} not in accounts (Missing in ${state.sourceNames.books})`,
+            nib.tv,
+            nib.ig,
+            nib.cg,
+            nib.sg,
+          ],
+          ["  • Reverse Charge (Inward RCM)", 0, 0, 0, 0],
+          ["  • Expenses / Other capital credits", 0, 0, 0, 0],
+          [
+            `  • Amount Difference in Accounts (${state.sourceNames.gstr2b} higher)`,
+            adj.tv,
+            adj.ig,
+            adj.cg,
+            adj.sg,
+          ],
+          ["Less:", "", "", "", ""],
+          [
+            `  • Input invoices in accounts not in ${state.sourceNames.gstr2b} (Missing in ${state.sourceNames.gstr2b})`,
+            ni2b.tv,
+            ni2b.ig,
+            ni2b.cg,
+            ni2b.sg,
+          ],
+          ["  • Input invoice amended / credits reversed", 0, 0, 0, 0],
+          [
+            "Input invoices as per calculation (Reconciled)",
+            calc.tv,
+            calc.ig,
+            calc.cg,
+            calc.sg,
+          ],
+          [
+            `            Input invoices as per ${state.sourceNames.gstr2b} (${state.sourceNames.gstr2b} Actual Total)`,
+            gt.tv,
+            gt.ig,
+            gt.cg,
+            gt.sg,
+          ],
+          [
+            `Difference (Calculated vs ${state.sourceNames.gstr2b})`,
+            diff_val.tv,
+            diff_val.ig,
+            diff_val.cg,
+            diff_val.sg,
+          ],
+        ];
+
+        const wsSummary = XLSX.utils.aoa_to_sheet([
+          titleBanner,
+          summaryHeaders,
+          ...summaryRows,
+        ]);
+        wsSummary["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }];
+
+        const fIdx_matched = Math.max(3, N_matched + 3);
+        const fIdx_diff = Math.max(2, N_diff + 2);
+        const fIdx_ni2b = Math.max(2, N_ni2b + 2);
+        const fIdx_nib = Math.max(2, N_nib + 2);
+
+        wsSummary["B3"] = {
+          t: "n",
+          v: bt.tv,
+          f: `='Matched'!E${fIdx_matched}+'Amount Differs'!D${fIdx_diff}+'Not in 2B(Books Only)'!E${fIdx_ni2b}`,
+        };
+        wsSummary["C3"] = {
+          t: "n",
+          v: bt.ig,
+          f: `='Matched'!F${fIdx_matched}+'Amount Differs'!E${fIdx_diff}+'Not in 2B(Books Only)'!F${fIdx_ni2b}`,
+        };
+        wsSummary["D3"] = {
+          t: "n",
+          v: bt.cg,
+          f: `='Matched'!G${fIdx_matched}+'Amount Differs'!F${fIdx_diff}+'Not in 2B(Books Only)'!G${fIdx_ni2b}`,
+        };
+        wsSummary["E3"] = {
+          t: "n",
+          v: bt.sg,
+          f: `='Matched'!H${fIdx_matched}+'Amount Differs'!G${fIdx_diff}+'Not in 2B(Books Only)'!H${fIdx_ni2b}`,
+        };
+        wsSummary["B5"] = {
+          t: "n",
+          v: nib.tv,
+          f: `='Not in Books(2B Only)'!E${fIdx_nib}`,
+        };
+        wsSummary["C5"] = {
+          t: "n",
+          v: nib.ig,
+          f: `='Not in Books(2B Only)'!F${fIdx_nib}`,
+        };
+        wsSummary["D5"] = {
+          t: "n",
+          v: nib.cg,
+          f: `='Not in Books(2B Only)'!G${fIdx_nib}`,
+        };
+        wsSummary["E5"] = {
+          t: "n",
+          v: nib.sg,
+          f: `='Not in Books(2B Only)'!H${fIdx_nib}`,
+        };
+        wsSummary["B6"] = { t: "n", v: 0 };
+        wsSummary["C6"] = { t: "n", v: 0 };
+        wsSummary["D6"] = { t: "n", v: 0 };
+        wsSummary["E6"] = { t: "n", v: 0 };
+        wsSummary["B7"] = { t: "n", v: 0 };
+        wsSummary["C7"] = { t: "n", v: 0 };
+        wsSummary["D7"] = { t: "n", v: 0 };
+        wsSummary["E7"] = { t: "n", v: 0 };
+        wsSummary["B8"] = {
+          t: "n",
+          v: adj.tv,
+          f: `='Amount Differs'!L${fIdx_diff}-'Amount Differs'!D${fIdx_diff}`,
+        };
+        wsSummary["C8"] = {
+          t: "n",
+          v: adj.ig,
+          f: `='Amount Differs'!M${fIdx_diff}-'Amount Differs'!E${fIdx_diff}`,
+        };
+        wsSummary["D8"] = {
+          t: "n",
+          v: adj.cg,
+          f: `='Amount Differs'!N${fIdx_diff}-'Amount Differs'!F${fIdx_diff}`,
+        };
+        wsSummary["E8"] = {
+          t: "n",
+          v: adj.sg,
+          f: `='Amount Differs'!O${fIdx_diff}-'Amount Differs'!G${fIdx_diff}`,
+        };
+        wsSummary["B10"] = {
+          t: "n",
+          v: ni2b.tv,
+          f: `='Not in 2B(Books Only)'!E${fIdx_ni2b}`,
+        };
+        wsSummary["C10"] = {
+          t: "n",
+          v: ni2b.ig,
+          f: `='Not in 2B(Books Only)'!F${fIdx_ni2b}`,
+        };
+        wsSummary["D10"] = {
+          t: "n",
+          v: ni2b.cg,
+          f: `='Not in 2B(Books Only)'!G${fIdx_ni2b}`,
+        };
+        wsSummary["E10"] = {
+          t: "n",
+          v: ni2b.sg,
+          f: `='Not in 2B(Books Only)'!H${fIdx_ni2b}`,
+        };
+        wsSummary["B11"] = { t: "n", v: 0 };
+        wsSummary["C11"] = { t: "n", v: 0 };
+        wsSummary["D11"] = { t: "n", v: 0 };
+        wsSummary["E11"] = { t: "n", v: 0 };
+        wsSummary["B12"] = { t: "n", v: calc.tv, f: `=B3+B5+B6+B7+B8-B10-B11` };
+        wsSummary["C12"] = { t: "n", v: calc.ig, f: `=C3+C5+C6+C7+C8-C10-C11` };
+        wsSummary["D12"] = { t: "n", v: calc.cg, f: `=D3+D5+D6+D7+D8-D10-D11` };
+        wsSummary["E12"] = { t: "n", v: calc.sg, f: `=E3+E5+E6+E7+E8-E10-E11` };
+        wsSummary["B13"] = {
+          t: "n",
+          v: gt.tv,
+          f: `='Matched'!N${fIdx_matched}+'Amount Differs'!L${fIdx_diff}+'Not in Books(2B Only)'!E${fIdx_nib}`,
+        };
+        wsSummary["C13"] = {
+          t: "n",
+          v: gt.ig,
+          f: `='Matched'!O${fIdx_matched}+'Amount Differs'!M${fIdx_diff}+'Not in Books(2B Only)'!F${fIdx_nib}`,
+        };
+        wsSummary["D13"] = {
+          t: "n",
+          v: gt.cg,
+          f: `='Matched'!P${fIdx_matched}+'Amount Differs'!N${fIdx_diff}+'Not in Books(2B Only)'!G${fIdx_nib}`,
+        };
+        wsSummary["E13"] = {
+          t: "n",
+          v: gt.sg,
+          f: `='Matched'!Q${fIdx_matched}+'Amount Differs'!O${fIdx_diff}+'Not in Books(2B Only)'!H${fIdx_nib}`,
+        };
+        wsSummary["B14"] = { t: "n", v: diff_val.tv, f: `=B12-B13` };
+        wsSummary["C14"] = { t: "n", v: diff_val.ig, f: `=C12-C13` };
+        wsSummary["D14"] = { t: "n", v: diff_val.cg, f: `=D12-D13` };
+        wsSummary["E14"] = { t: "n", v: diff_val.sg, f: `=E12-E13` };
+
+        const attachHyperlink = (cellAddr, targetSheet) => {
+          if (wsSummary[cellAddr])
+            wsSummary[cellAddr].l = {
+              Target: `#'${targetSheet}'!A1`,
+              Tooltip: `Click to view items in sheet '${targetSheet}'`,
+            };
+        };
+        attachHyperlink("A3", "Matched");
+        attachHyperlink("A5", "Not in Books(2B Only)");
+        attachHyperlink("A8", "Amount Differs");
+        attachHyperlink("A10", "Not in 2B(Books Only)");
+        attachHyperlink("A13", "Matched");
+
+        applyStylesToSheet(wsSummary, 2, true);
+
+        XLSX.utils.book_append_sheet(wb, wsSummary, "Reconciliation Summary");
+        XLSX.utils.book_append_sheet(wb, wsMatched, "Matched");
+        XLSX.utils.book_append_sheet(wb, wsDiff, "Amount Differs");
+        XLSX.utils.book_append_sheet(wb, wsNotIn2B, "Not in 2B(Books Only)");
+        XLSX.utils.book_append_sheet(wb, wsNotInBooks, "Not in Books(2B Only)");
+
+        const fn = customName || `GST_Recon.xlsx`;
+        const finalName = fn.endsWith(".xlsx") ? fn : `${fn}.xlsx`;
+        const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+        const blob = new Blob([wbout], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        if (useFileSystem && "showSaveFilePicker" in window) {
+          try {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: finalName,
+              types: [
+                {
+                  description: "Excel",
+                  accept: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                      [".xlsx"],
+                  },
+                },
+              ],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            return;
+          } catch (err) {}
+        }
+        const url = URL.createObjectURL(blob),
+          a = document.createElement("a");
+        a.href = url;
+        a.download = finalName;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+      }
+
+      function triggerStandaloneSaveAs(defaultFn) {
+        document.getElementById("standalone-filename-input").value = defaultFn;
+        document
+          .getElementById("standalone-saveas-modal")
+          .classList.remove("hidden");
+      }
+      function closeStandaloneSaveAs() {
+        document
+          .getElementById("standalone-saveas-modal")
+          .classList.add("hidden");
+      }
+      async function handleStandaloneDirectDownload() {
+        const fn =
+          document.getElementById("standalone-filename-input").value ||
+          "GST_Report.xlsx";
+        await exportReconciliationReport(fn, false);
+        closeStandaloneSaveAs();
+      }
+      async function handleStandaloneNativeSaveAs() {
+        const fn =
+          document.getElementById("standalone-filename-input").value ||
+          "GST_Report.xlsx";
+        await exportReconciliationReport(fn, true);
+        closeStandaloneSaveAs();
+      }
+      function restartWorkspace() {
+        location.reload();
+      }
+      function toggleTheme() {
+        document.body.classList.toggle("dark");
+        updateThemeUI(document.body.classList.contains("dark"));
+      }
+      function updateThemeUI(isDark) {
+        const knob = document.getElementById("theme-knob"),
+          label = document.getElementById("theme-label"),
+          container = document.getElementById("knob-icon-parent");
+        knob.classList.toggle("translate-x-[24px]", isDark);
+        label.textContent = isDark ? "Dark Mode" : "Light Mode";
+        container.innerHTML = isDark
+          ? `<svg class="w-3 h-3 text-slate-800" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`
+          : `<svg class="w-3 h-3 text-amber-500" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>`;
+      }
+    </script>
+
+    <div
+      id="standalone-saveas-modal"
+      class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+      >
+        <div
+          class="flex justify-between items-center p-6 border-b dark:border-slate-800"
+        >
+          <h3 class="text-base font-bold dark:text-white">
+            📥 Export Workbook
+          </h3>
+          <button
+            onclick="closeStandaloneSaveAs()"
+            class="text-slate-400 hover:text-slate-600"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="p-6 space-y-4">
+          <input
+            id="standalone-filename-input"
+            type="text"
+            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm dark:text-white"
+          />
+          <button
+            onclick="handleStandaloneDirectDownload()"
+            class="w-full text-left p-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-4"
+          >
+            <span>📥</span>
+            <div>
+              <h4 class="text-sm font-bold dark:text-white">
+                Standard Download
+              </h4>
+              <p class="text-[10px] text-slate-500">Fastest method.</p>
+            </div>
+          </button>
+          <button
+            onclick="handleStandaloneNativeSaveAs()"
+            class="w-full text-left p-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-4"
+          >
+            <span>📁</span>
+            <div>
+              <h4 class="text-sm font-bold dark:text-white">
+                Native "Save As"
+              </h4>
+              <p class="text-[10px] text-slate-500">Choose folder.</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

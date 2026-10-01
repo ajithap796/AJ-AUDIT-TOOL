@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GSTR 2A/2B Consolidator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<style>
+:root{--bg:#f1f5f9;--card:#fff;--fg:#0f172a;--muted:#64748b;--accent:#0f766e;--accent2:#134e4a;--border:#e2e8f0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1220;--card:#131c2e;--fg:#e5e9f0;--muted:#93a1b8;--accent:#2dd4bf;--accent2:#5eead4;--border:#243044}}
+:root[data-theme="dark"]{--bg:#0b1220;--card:#131c2e;--fg:#e5e9f0;--muted:#93a1b8;--accent:#2dd4bf;--accent2:#5eead4;--border:#243044}
+*{box-sizing:border-box}
+body{font-family:-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--fg);margin:0;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0) 0}
+.wrap{max-width:780px;margin:0 auto;padding:28px 20px 60px}
+header{margin-bottom:22px}
+h1{font-size:22px;margin:0 0 4px}
+p.sub{color:var(--muted);margin:0;font-size:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.drop{border:2px dashed var(--border);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--accent);background:rgba(15,118,110,.08)}
+.drop svg{opacity:.6;margin-bottom:8px}
+.drop b{color:var(--accent)}
+input[type=file]{display:none}
+ul#filelist{list-style:none;padding:0;margin:14px 0 0;font-size:13px}
+ul#filelist li{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;border-radius:8px;background:var(--bg);margin-bottom:5px}
+ul#filelist .pill{font-size:11px;padding:1px 8px;border-radius:10px;font-weight:600}
+.pill.t2a{background:#dbeafe;color:#1e40af}.pill.t2b{background:#dcfce7;color:#166534}.pill.bad{background:#fee2e2;color:#991b1b}
+button{background:var(--accent);color:#fff;border:none;padding:11px 22px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;width:100%;margin-top:16px}
+button:disabled{opacity:.4;cursor:default}
+button:hover:not(:disabled){background:var(--accent2)}
+.results{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+@media(max-width:520px){.results{grid-template-columns:1fr}}
+.res-card{border:1px solid var(--border);border-radius:10px;padding:14px}
+.res-card h3{margin:0 0 8px;font-size:14px}
+.res-card table{width:100%;font-size:12px;border-collapse:collapse}
+.res-card td{padding:3px 0;color:var(--muted)}
+.res-card td:last-child{text-align:right;color:var(--fg);font-weight:600}
+#log{font-family:ui-monospace,monospace;font-size:11.5px;white-space:pre-wrap;color:var(--muted);max-height:150px;overflow:auto;margin-top:10px}
+footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
+</style></head>
+<body>
+<div class="wrap">
+<header>
+  <h1>GSTR 2A / 2B Consolidator</h1>
+  <p class="sub">Merges monthly R2A and quarterly GSTR2BQ exports into one workbook each — same logic and layout as the manual builds.</p>
+</header>
+
+<div class="card">
+  <div class="drop" id="drop">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+    <div><b>Click to choose</b> or drag .xlsx files here</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Any mix of R2A and GSTR2BQ files, any number</div>
+  </div>
+  <input type="file" id="files" multiple accept=".xlsx">
+  <ul id="filelist"></ul>
+  <button id="go" disabled>Process &amp; Download</button>
+  <div id="log"></div>
+</div>
+
+<div class="card" id="resultsCard" style="display:none">
+  <div class="results" id="results"></div>
+</div>
+
+<footer>Runs entirely in this browser tab — files never leave your device.</footer>
+</div>
+<script>
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const SKIP_SHEET=/read ?me|^itc /i;
+const HEADER_FILL={type:'pattern',pattern:'solid',fgColor:{argb:'FF002060'}};
+const HEADER_FONT={name:'Arial',size:9,bold:true,color:{argb:'FFFFFFFF'}};
+const HEADER_ALIGN={horizontal:'center',vertical:'middle',wrapText:true};
+const DATA_FONT={name:'Calibri',size:11};
+
+function detectType(name){
+  if(/R2A/i.test(name))return '2A';
+  if(/GSTR ?2B/i.test(name))return '2B';
+  return null;
+}
+function extractPeriod(name,type){
+  let m = type==='2A' ? name.match(/_(\d{2})(\d{4})_R2A/i) : name.match(/^(\d{2})(\d{4})_/);
+  if(!m) m = name.match(/(\d{2})(\d{4})/);
+  if(!m) return null;
+  const mm=+m[1], yyyy=+m[2];
+  if(mm<1||mm>12) return null;
+  return Date.UTC(yyyy, mm-1, 1);
+}
+function cellV(ws,r,c){const cell=ws[XLSX.utils.encode_cell({r,c})];return cell?cell.v:null;}
+function trueRange(ws){
+  // some GST-portal exports declare a wrong (too small) dimension, so we
+  // recompute the real extent from actual cell addresses instead of trusting ws['!ref']
+  let a=Infinity,b=-Infinity,c=Infinity,d=-Infinity;
+  for(const k in ws){
+    if(k[0]==='!')continue;
+    const ad=XLSX.utils.decode_cell(k);
+    if(ad.r<a)a=ad.r; if(ad.r>b)b=ad.r; if(ad.c<c)c=ad.c; if(ad.c>d)d=ad.c;
+  }
+  return b<0?null:{s:{r:a,c:c},e:{r:b,c:d}};
+}
+function findHeaderRow(ws,range){
+  for(let r=range.s.r;r<=Math.min(range.s.r+14,range.e.r);r++)
+    for(let c=range.s.c;c<=Math.min(range.s.c+45,range.e.c);c++){
+      const v=cellV(ws,r,c);
+      if(typeof v==='string'&&/gstin/i.test(v))return r;
+    }
+  return -1;
+}
+function flattenHeader(ws,hdrRow,range){
+  const row1=[],row2=[];
+  for(let c=range.s.c;c<=range.e.c;c++){row1.push(cellV(ws,hdrRow,c));row2.push(cellV(ws,hdrRow+1,c));}
+  let last=null;
+  const ff=row1.map(v=>{if(v!=null&&v!=='')last=v;return last;});
+  return ff.map((a,i)=>(row2[i]!=null&&row2[i]!=='')?row2[i]:a);
+}
+function extractSection(ws){
+  const range=trueRange(ws); if(!range)return null;
+  const hdrRow=findHeaderRow(ws,range); if(hdrRow<0)return null;
+  const header=flattenHeader(ws,hdrRow,range);
+  const rateIdx=header.findIndex(h=>h&&/rate/i.test(h));
+  const dataStart=hdrRow+2, rows=[];
+  for(let r=dataStart;r<=range.e.r;r++){
+    let vals=[],any=false;
+    for(let c=range.s.c;c<=range.e.c;c++){const v=cellV(ws,r,c); if(v!=null&&v!=='')any=true; vals.push(v);}
+    if(!any)continue;
+    if(vals[0]==null||vals[0]==='')continue;
+    if(rateIdx>=0&&vals[rateIdx]==='-')continue;
+    rows.push(vals);
+  }
+  return rows.length?{header,rows}:null;
+}
+function styleHeaderRow(row){
+  row.eachCell(c=>{c.font=HEADER_FONT;c.fill=HEADER_FILL;c.alignment=HEADER_ALIGN;});
+  row.height=30;
+}
+function colWidth(h){return Math.max(10,Math.min(28,((h?String(h).length:8))+3));}
+
+async function buildOutput(type,sections){
+  const secNames=Object.keys(sections);
+  if(!secNames.length)return null;
+  const wb=new ExcelJS.Workbook();
+  const leadCol=type==='2A'?'Month (2A)':'Quarter (2B)';
+  const summary=[];
+  for(const sec of secNames){
+    const pm=sections[sec];
+    const dates=Object.keys(pm).map(Number).sort((a,b)=>a-b);
+    const header=pm[dates[0]].header;
+    const ws=wb.addWorksheet((`Consolidated ${type} ${sec}`).slice(0,31));
+    ws.addRow([leadCol,...header]);
+    styleHeaderRow(ws.getRow(1));
+    let n=0;
+    for(const t of dates)for(const row of pm[t].rows){
+      const r=ws.addRow([new Date(t),...row]);
+      r.getCell(1).numFmt='mmm-yy';
+      r.eachCell(c=>{if(!c.font)c.font=DATA_FONT;});
+      n++;
+    }
+    ws.columns=[{width:12},...header.map(colWidth).map(w=>({width:w}))];
+    ws.views=[{state:'frozen',ySplit:1}];
+    summary.push([sec,n]);
+  }
+  const allDates=[...new Set(secNames.flatMap(s=>Object.keys(sections[s]).map(Number)))].sort((a,b)=>a-b);
+  for(const t of allDates){
+    const d=new Date(t);
+    const label=type==='2A'?MONTHS[d.getUTCMonth()]:MONTHS[d.getUTCMonth()]+String(d.getUTCFullYear()).slice(2);
+    for(const sec of secNames){
+      const entry=sections[sec][t]; if(!entry)continue;
+      const ws=wb.addWorksheet((`${label}-${sec}`).slice(0,31));
+      ws.addRow(entry.header);
+      styleHeaderRow(ws.getRow(1));
+      for(const row of entry.rows){const r=ws.addRow(row); r.eachCell(c=>{if(!c.font)c.font=DATA_FONT;});}
+      ws.columns=entry.header.map(colWidth).map(w=>({width:w}));
+      ws.views=[{state:'frozen',ySplit:1}];
+    }
+  }
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`Consolidated_${type}_output.xlsx`;
+  document.body.appendChild(a); a.click(); a.remove();
+  return summary;
+}
+
+const logEl=document.getElementById('log');
+const listEl=document.getElementById('filelist');
+const goBtn=document.getElementById('go');
+const fileInput=document.getElementById('files');
+const drop=document.getElementById('drop');
+let pickedFiles=[];
+
+function log(s){logEl.textContent+=(logEl.textContent?'\n':'')+s;}
+function renderList(){
+  listEl.innerHTML='';
+  for(const f of pickedFiles){
+    const t=detectType(f.name);
+    const li=document.createElement('li');
+    const pillClass=t==='2A'?'t2a':t==='2B'?'t2b':'bad';
+    li.innerHTML=`<span>${f.name}</span><span class="pill ${pillClass}">${t||'unrecognized'}</span>`;
+    listEl.appendChild(li);
+  }
+  goBtn.disabled=pickedFiles.length===0;
+}
+drop.onclick=()=>fileInput.click();
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over');};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{
+  e.preventDefault();drop.classList.remove('over');
+  pickedFiles=[...e.dataTransfer.files].filter(f=>f.name.endsWith('.xlsx'));
+  renderList();
+};
+fileInput.onchange=()=>{pickedFiles=[...fileInput.files]; renderList();};
+
+goBtn.onclick=async()=>{
+  goBtn.disabled=true; goBtn.textContent='Processing…';
+  logEl.textContent=''; document.getElementById('resultsCard').style.display='none';
+  const byType={'2A':{},'2B':{}};
+  for(const f of pickedFiles){
+    const type=detectType(f.name);
+    if(!type){log(`Skipped (name doesn't say R2A or GSTR2B): ${f.name}`);continue;}
+    const period=extractPeriod(f.name,type);
+    if(period==null){log(`Skipped (couldn't find MMYYYY in name): ${f.name}`);continue;}
+    let wb;
+    try{ wb=XLSX.read(await f.arrayBuffer(),{type:'array'}); }
+    catch(e){ log(`Skipped (couldn't open, is it a valid .xlsx?): ${f.name}`); continue; }
+    let found=0;
+    for(const sheetName of wb.SheetNames){
+      if(SKIP_SHEET.test(sheetName))continue;
+      const res=extractSection(wb.Sheets[sheetName]);
+      if(!res)continue;
+      found++;
+      byType[type][sheetName]=byType[type][sheetName]||{};
+      byType[type][sheetName][period]=res;
+    }
+    log(`${f.name} → ${type}, ${found} section(s) with data`);
+  }
+  const sum2a=await buildOutput('2A',byType['2A']);
+  const sum2b=await buildOutput('2B',byType['2B']);
+  const results=document.getElementById('results');
+  results.innerHTML='';
+  function card(title,rows){
+    if(!rows)return '';
+    return `<div class="res-card"><h3>${title}</h3><table>${rows.map(([s,n])=>`<tr><td>${s}</td><td>${n} rows</td></tr>`).join('')}</table></div>`;
+  }
+  results.innerHTML=card('Consolidated 2A',sum2a)+card('Consolidated 2B',sum2b);
+  if(sum2a||sum2b) document.getElementById('resultsCard').style.display='block';
+  if(!sum2a&&!sum2b) log('Nothing to consolidate — check the file names/contents above.');
+  else log('Downloaded workbook(s).');
+  goBtn.disabled=false; goBtn.textContent='Process & Download';
+};
+</script>
+</body></html>

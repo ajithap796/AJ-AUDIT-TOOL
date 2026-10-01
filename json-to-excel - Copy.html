@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GST JSON to Excel Converter</title>
+
+<!-- Tailwind CSS — precompiled offline build (no external CDN dependency) -->
+<style>
+*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.visible{visibility:visible}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0}.right-3\.5{right:.875rem}.top-1\/2{top:50%}.mx-auto{margin-left:auto;margin-right:auto}.mb-2{margin-bottom:.5rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-0\.5{margin-top:.125rem}.mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-2\.5{margin-top:.625rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.table{display:table}.hidden{display:none}.h-10{height:2.5rem}.h-3\.5{height:.875rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-9{height:2.25rem}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-3\.5{width:.875rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-9{width:2.25rem}.w-full{width:100%}.max-w-3xl{max-width:48rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.appearance-none{-webkit-appearance:none;-moz-appearance:none;appearance:none}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-2\.5{gap:.625rem}.gap-3{gap:.75rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-dashed{border-style:dashed}.border-emerald-200{--tw-border-opacity:1;border-color:rgb(167 243 208/var(--tw-border-opacity,1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240/var(--tw-border-opacity,1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225/var(--tw-border-opacity,1))}.bg-emerald-50{--tw-bg-opacity:1;background-color:rgb(236 253 245/var(--tw-bg-opacity,1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249/var(--tw-bg-opacity,1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252/var(--tw-bg-opacity,1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.bg-gradient-to-b{background-image:linear-gradient(to bottom,var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.from-blue-500{--tw-gradient-from:#3b82f6 var(--tw-gradient-from-position);--tw-gradient-to:rgba(59,130,246,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-fuchsia-500{--tw-gradient-from:#d946ef var(--tw-gradient-from-position);--tw-gradient-to:rgba(217,70,239,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.via-purple-500{--tw-gradient-to:rgba(168,85,247,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#a855f7 var(--tw-gradient-via-position),var(--tw-gradient-to)}.to-blue-600{--tw-gradient-to:#2563eb var(--tw-gradient-to-position)}.to-indigo-500{--tw-gradient-to:#6366f1 var(--tw-gradient-to-position)}.p-6{padding:1.5rem}.px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-3\.5{padding-top:.875rem;padding-bottom:.875rem}.py-9{padding-top:2.25rem;padding-bottom:2.25rem}.pr-10{padding-right:2.5rem}.text-center{text-align:center}.align-middle{vertical-align:middle}.font-sans{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[11px\]{font-size:11px}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.tracking-tight{letter-spacing:-.025em}.tracking-wide{letter-spacing:.025em}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85/var(--tw-text-opacity,1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59/var(--tw-text-opacity,1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.accent-blue-600{accent-color:#2563eb}.opacity-0{opacity:0}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color)}.shadow-sm,.shadow-xl{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color)}.shadow-purple-500\/30{--tw-shadow-color:rgba(168,85,247,.3);--tw-shadow:var(--tw-shadow-colored)}.shadow-slate-200\/60{--tw-shadow-color:rgba(226,232,240,.6);--tw-shadow:var(--tw-shadow-colored)}.outline-none{outline:2px solid transparent;outline-offset:2px}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-300{transition-duration:.3s}.hover\:border-blue-400:hover{--tw-border-opacity:1;border-color:rgb(96 165 250/var(--tw-border-opacity,1))}.hover\:border-slate-300:hover{--tw-border-opacity:1;border-color:rgb(203 213 225/var(--tw-border-opacity,1))}.hover\:border-slate-400:hover{--tw-border-opacity:1;border-color:rgb(148 163 184/var(--tw-border-opacity,1))}.hover\:bg-blue-50\/60:hover{background-color:rgba(239,246,255,.6)}.hover\:opacity-90:hover{opacity:.9}.focus\:border-blue-500:focus{--tw-border-opacity:1;border-color:rgb(59 130 246/var(--tw-border-opacity,1))}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.focus\:ring-blue-500\/40:focus{--tw-ring-color:rgba(59,130,246,.4)}.active\:translate-y-px:active{--tw-translate-y:1px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.disabled\:cursor-not-allowed:disabled{cursor:not-allowed}.disabled\:opacity-45:disabled{opacity:.45}.dark\:block:is(.dark *){display:block}.dark\:hidden:is(.dark *){display:none}.dark\:border-emerald-500\/30:is(.dark *){border-color:rgba(16,185,129,.3)}.dark\:border-slate-600:is(.dark *){--tw-border-opacity:1;border-color:rgb(71 85 105/var(--tw-border-opacity,1))}.dark\:border-slate-700:is(.dark *){--tw-border-opacity:1;border-color:rgb(51 65 85/var(--tw-border-opacity,1))}.dark\:bg-emerald-500\/10:is(.dark *){background-color:rgba(16,185,129,.1)}.dark\:bg-slate-800:is(.dark *){--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.dark\:bg-slate-900:is(.dark *){--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.dark\:bg-slate-900\/60:is(.dark *){background-color:rgba(15,23,42,.6)}.dark\:text-emerald-400:is(.dark *){--tw-text-opacity:1;color:rgb(52 211 153/var(--tw-text-opacity,1))}.dark\:text-slate-100:is(.dark *){--tw-text-opacity:1;color:rgb(241 245 249/var(--tw-text-opacity,1))}.dark\:text-slate-200:is(.dark *){--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}.dark\:text-slate-300:is(.dark *){--tw-text-opacity:1;color:rgb(203 213 225/var(--tw-text-opacity,1))}.dark\:text-slate-400:is(.dark *){--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.dark\:text-slate-500:is(.dark *){--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.dark\:text-slate-600:is(.dark *){--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.dark\:text-white:is(.dark *){--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.dark\:shadow-black\/20:is(.dark *){--tw-shadow-color:rgba(0,0,0,.2);--tw-shadow:var(--tw-shadow-colored)}.dark\:hover\:border-blue-500:hover:is(.dark *){--tw-border-opacity:1;border-color:rgb(59 130 246/var(--tw-border-opacity,1))}.dark\:hover\:border-slate-500:hover:is(.dark *){--tw-border-opacity:1;border-color:rgb(100 116 139/var(--tw-border-opacity,1))}.dark\:hover\:border-slate-600:hover:is(.dark *){--tw-border-opacity:1;border-color:rgb(71 85 105/var(--tw-border-opacity,1))}.dark\:hover\:bg-blue-500\/5:hover:is(.dark *){background-color:rgba(59,130,246,.05)}@media (min-width:640px){.sm\:p-8{padding:2rem}.sm\:py-14{padding-top:3.5rem;padding-bottom:3.5rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}}
+</style>
+
+<!-- SheetJS (unchanged dependency for the conversion logic below) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+  /* ==========================================================
+     Small hand-written CSS for the handful of elements whose
+     classes are toggled directly by the (untouched) JS logic
+     block further down — Tailwind's utility classes can't
+     express these "className swap" rules on their own, so a
+     minimal companion stylesheet keeps them working exactly
+     as before. Everything else in this file is pure Tailwind.
+  ========================================================== */
+
+  html, body { scroll-behavior: smooth; }
+
+  /* --- Convert button loading state (JS: convertBtn.classList.toggle('loading')) --- */
+  #convertBtn .spinner{
+    width:15px;height:15px;
+    border:2px solid rgba(255,255,255,0.35);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:gst-spin 0.7s linear infinite;
+    display:none;
+  }
+  #convertBtn.loading .spinner{ display:inline-block; }
+  #convertBtn.loading .btn-label{ display:none; }
+  @keyframes gst-spin{ to{ transform:rotate(360deg); } }
+
+  /* --- Dropzone drag-over state (JS: dropzone.classList.add/remove('dragover')) --- */
+  .dropzone.dragover{
+    border-color:#3b82f6 !important;
+    background:rgba(59,130,246,0.08) !important;
+  }
+  html.dark .dropzone.dragover{
+    background:rgba(59,130,246,0.12) !important;
+  }
+
+  /* --- Status banner (JS: statusBanner.classList.add/remove('show','success','error')) --- */
+  .status-banner{
+    display:none;
+    align-items:flex-start;gap:10px;
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:0.88rem;
+    border:1px solid transparent;
+  }
+  .status-banner.show{ display:flex; }
+  .status-banner.success{
+    background:#ecfdf5; color:#059669; border-color:#a7f3d0;
+  }
+  html.dark .status-banner.success{
+    background:rgba(16,185,129,0.12); color:#34d399; border-color:rgba(52,211,153,0.3);
+  }
+  .status-banner.error{
+    background:#fef2f2; color:#dc2626; border-color:#fecaca;
+  }
+  html.dark .status-banner.error{
+    background:rgba(239,68,68,0.12); color:#f87171; border-color:rgba(248,113,113,0.3);
+  }
+  .status-banner .sb-icon{ flex-shrink:0; font-size:1.1rem; line-height:1; }
+  .status-banner .sb-body{ flex:1; }
+  .status-banner .sb-title{ font-weight:650; margin-bottom:2px; }
+  .status-banner .sb-detail{ opacity:0.85; font-size:0.82rem; }
+  .status-banner ul{ margin:6px 0 0; padding-left:18px; }
+  .status-banner li{ margin-bottom:2px; }
+
+  /* --- File list rows, built dynamically by JS (renderFileList()) --- */
+  .file-item{
+    display:flex;align-items:center;justify-content:space-between;
+    background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;
+    padding:10px 12px;font-size:0.85rem;gap:10px;color:#1e293b;
+  }
+  html.dark .file-item{ background:#0f172a; border-color:#334155; color:#e2e8f0; }
+  .file-item .name{
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    display:flex;align-items:center;gap:8px;flex:1;min-width:0;
+  }
+  .file-item .name-text{ overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .file-item .size{ color:#94a3b8;font-size:0.78rem;flex-shrink:0; }
+  .file-item .status-dot{ width:8px;height:8px;border-radius:50%;flex-shrink:0;background:#94a3b8; }
+  .file-item .status-dot.ok{ background:#10b981; }
+  .file-item .status-dot.err{ background:#ef4444; }
+  .file-item .remove-btn{
+    background:none;border:none;color:#94a3b8;cursor:pointer;
+    font-size:1rem;line-height:1;padding:2px 6px;border-radius:4px;flex-shrink:0;
+  }
+  .file-item .remove-btn:hover{ color:#ef4444; background:rgba(239,68,68,0.1); }
+</style>
+</head>
+<body class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
+
+<div class="max-w-3xl mx-auto px-4 py-10 sm:py-14">
+
+  <!-- Theme toggle -->
+  <div class="flex justify-end mb-6">
+    <button
+      id="themeToggle"
+      type="button"
+      aria-label="Toggle light and dark theme"
+      class="inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 shadow-sm hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
+    >
+      <!-- Sun icon: visible in dark mode (click to go light) -->
+      <svg class="hidden dark:block w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+      <!-- Moon icon: visible in light mode (click to go dark) -->
+      <svg class="block dark:hidden w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Header / branding -->
+  <header class="text-center mb-8">
+    <div class="flex items-center justify-center gap-2.5 flex-wrap">
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">GST JSON &rarr; Excel Converter</h1>
+      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide text-white bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 shadow-sm shadow-purple-500/30 align-middle">
+        AJ 1.0
+      </span>
+    </div>
+    <p class="mt-2.5 text-sm text-slate-500 dark:text-slate-400">
+      Convert GSTN offline-tool JSON exports into formatted Excel workbooks.
+    </p>
+    <span class="mt-4 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 px-3 py-1.5 text-xs font-semibold">
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+      100% local &mdash; nothing leaves your browser
+    </span>
+  </header>
+
+  <!-- Main interface card -->
+  <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl shadow-slate-200/60 dark:shadow-black/20 p-6 sm:p-8 mb-6">
+
+    <!-- Mode selector -->
+    <div class="mb-6">
+      <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2" for="modeSelect">Mode</label>
+      <div class="relative">
+        <select
+          id="modeSelect"
+          class="w-full appearance-none bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-4 py-3 pr-10 text-sm outline-none cursor-pointer focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-colors"
+        >
+          <option value="GSTR-1">GSTR-1 (Outward Supplies)</option>
+          <option value="GSTR-3B">GSTR-3B (Summary Return)</option>
+        </select>
+        <svg class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" viewBox="0 0 10 6" fill="none">
+          <path d="M0 0l5 6 5-6z" fill="currentColor"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- File drop zone -->
+    <div class="mb-6">
+      <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">JSON File(s)</label>
+      <div
+        id="dropzone"
+        class="dropzone relative border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl px-4 py-9 text-center cursor-pointer transition-colors hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/60 dark:hover:bg-blue-500/5"
+      >
+        <input type="file" id="fileInput" accept=".json,application/json" multiple class="absolute inset-0 opacity-0 cursor-pointer">
+        <svg class="mx-auto w-9 h-9 text-amber-400 mb-2" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 6a2 2 0 012-2h4.5l2 2H19a2 2 0 012 2v1H3V6z"/>
+          <path d="M2 9h20l-1.6 9.6a2 2 0 01-2 1.4H5.6a2 2 0 01-2-1.4L2 9z"/>
+        </svg>
+        <div class="primary text-sm font-semibold text-slate-700 dark:text-slate-200">Click to browse or drag &amp; drop JSON files</div>
+        <div class="secondary text-xs text-slate-400 dark:text-slate-500 mt-1">You can select multiple GSTR JSON exports at once</div>
+      </div>
+      <div class="file-list mt-4 flex flex-col gap-2" id="fileList"></div>
+    </div>
+
+    <!-- Consolidate option -->
+    <div class="mb-6">
+      <label class="checkbox-row flex items-start gap-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3.5 cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-colors" for="consolidateCheckbox">
+        <input type="checkbox" id="consolidateCheckbox" class="mt-0.5 w-4 h-4 accent-blue-600 cursor-pointer flex-shrink-0">
+        <span class="cb-text">
+          <div class="cb-title text-sm font-semibold text-slate-800 dark:text-slate-100">Consolidate into one workbook</div>
+          <div class="cb-desc text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">Combine all uploaded JSON files into a single Excel file with matching sheets merged together. If unchecked, one workbook is generated per JSON file.</div>
+        </span>
+      </label>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="flex gap-3">
+      <button
+        id="convertBtn"
+        disabled
+        class="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-b from-blue-500 to-blue-600 hover:opacity-90 active:translate-y-px disabled:opacity-45 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg px-5 py-3.5 transition"
+      >
+        <span class="spinner"></span>
+        <span class="btn-label">Convert to Excel</span>
+      </button>
+      <button
+        id="resetBtn"
+        class="bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 text-slate-700 dark:text-slate-200 font-semibold text-sm rounded-lg px-5 py-3.5 transition-colors"
+      >
+        Reset
+      </button>
+    </div>
+
+    <!-- Status banner -->
+    <div class="status-banner mt-4" id="statusBanner">
+      <span class="sb-icon" id="sbIcon">&#9989;</span>
+      <div class="sb-body">
+        <div class="sb-title" id="sbTitle"></div>
+        <div class="sb-detail" id="sbDetail"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy note -->
+  <div class="flex items-center justify-center gap-2 text-xs text-slate-400 dark:text-slate-500 text-center mt-6">
+    <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="4" y="10" width="16" height="10" rx="2"/>
+      <path d="M8 10V7a4 4 0 018 0v3"/>
+    </svg>
+    Files are read with the FileReader API and processed entirely in-memory. No uploads, no network calls.
+  </div>
+  <footer class="text-center text-xs text-slate-400 dark:text-slate-600 mt-2">SheetJS (xlsx) &bull; Client-side only</footer>
+</div>
+
+<!-- ==========================================================
+     THEME TOGGLE SCRIPT
+     ------------------------------------------------------------
+     Fully separate from the conversion logic below. Defaults to
+     dark mode (matching the <html class="dark"> set above); if
+     the user has switched to light before, that preference is
+     restored from localStorage.
+========================================================== -->
+<script>
+(function(){
+  "use strict";
+  var root = document.documentElement;
+
+  try {
+    var stored = localStorage.getItem('gstConverterTheme');
+    if(stored === 'light') root.classList.remove('dark');
+    else if(stored === 'dark') root.classList.add('dark');
+  } catch(e){ /* localStorage unavailable — keep default dark mode */ }
+
+  var themeToggle = document.getElementById('themeToggle');
+  if(themeToggle){
+    themeToggle.addEventListener('click', function(){
+      root.classList.toggle('dark');
+      try {
+        localStorage.setItem('gstConverterTheme', root.classList.contains('dark') ? 'dark' : 'light');
+      } catch(e){ /* ignore persistence errors */ }
+    });
+  }
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     STATE
+  ============================================================ */
+  // Each entry: { id, file, name, size, status: 'pending'|'ok'|'error', error, data (parsed JSON) }
+  let loadedFiles = [];
+  let idCounter = 0;
+
+  /* ============================================================
+     DOM REFS
+  ============================================================ */
+  const modeSelect = document.getElementById('modeSelect');
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const fileListEl = document.getElementById('fileList');
+  const consolidateCheckbox = document.getElementById('consolidateCheckbox');
+  const convertBtn = document.getElementById('convertBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const statusBanner = document.getElementById('statusBanner');
+  const sbIcon = document.getElementById('sbIcon');
+  const sbTitle = document.getElementById('sbTitle');
+  const sbDetail = document.getElementById('sbDetail');
+
+  /* ============================================================
+     UTILITIES
+  ============================================================ */
+  function formatBytes(bytes){
+    if(bytes === 0) return '0 B';
+    const units = ['B','KB','MB','GB'];
+    const i = Math.floor(Math.log(bytes)/Math.log(1024));
+    return (bytes/Math.pow(1024,i)).toFixed(i === 0 ? 0 : 1) + ' ' + units[i];
+  }
+
+  function hideStatus(){
+    statusBanner.classList.remove('show','success','error');
+  }
+
+  function showStatus(type, title, detailHtml){
+    statusBanner.classList.remove('success','error');
+    statusBanner.classList.add('show', type);
+    sbIcon.innerHTML = type === 'success' ? '&#9989;' : '&#9888;&#65039;';
+    sbTitle.textContent = title;
+    sbDetail.innerHTML = detailHtml || '';
+  }
+
+  function updateConvertButtonState(){
+    const hasOkFile = loadedFiles.some(f => f.status === 'ok');
+    convertBtn.disabled = !hasOkFile;
+  }
+
+  function setConvertLoading(isLoading){
+    convertBtn.classList.toggle('loading', isLoading);
+    convertBtn.disabled = isLoading || !loadedFiles.some(f => f.status === 'ok');
+  }
+
+  /* ============================================================
+     FILE LIST RENDERING
+  ============================================================ */
+  function renderFileList(){
+    fileListEl.innerHTML = '';
+    loadedFiles.forEach(entry => {
+      const item = document.createElement('div');
+      item.className = 'file-item';
+
+      const nameWrap = document.createElement('div');
+      nameWrap.className = 'name';
+
+      const dot = document.createElement('span');
+      dot.className = 'status-dot' + (entry.status === 'ok' ? ' ok' : entry.status === 'error' ? ' err' : '');
+
+      const nameText = document.createElement('span');
+      nameText.className = 'name-text';
+      nameText.textContent = entry.name;
+      nameText.title = entry.status === 'error' ? entry.error : entry.name;
+
+      nameWrap.appendChild(dot);
+      nameWrap.appendChild(nameText);
+
+      const size = document.createElement('span');
+      size.className = 'size';
+      size.textContent = entry.status === 'error' ? 'Invalid JSON' : formatBytes(entry.size);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.innerHTML = '&times;';
+      removeBtn.title = 'Remove file';
+      removeBtn.addEventListener('click', () => {
+        loadedFiles = loadedFiles.filter(f => f.id !== entry.id);
+        renderFileList();
+        updateConvertButtonState();
+        hideStatus();
+      });
+
+      item.appendChild(nameWrap);
+      item.appendChild(size);
+      item.appendChild(removeBtn);
+      fileListEl.appendChild(item);
+    });
+  }
+
+  /* ============================================================
+     FILE READING (FileReader API — fully local)
+  ============================================================ */
+  function readFileAsJson(file){
+    return new Promise((resolve) => {
+      const entry = {
+        id: 'f' + (idCounter++),
+        file,
+        name: file.name,
+        size: file.size,
+        status: 'pending',
+        error: null,
+        data: null
+      };
+
+      const reader = new FileReader();
+
+      reader.onload = function(e){
+        try {
+          const parsed = JSON.parse(e.target.result);
+          entry.data = parsed;
+          entry.status = 'ok';
+        } catch(err){
+          entry.status = 'error';
+          entry.error = 'Could not parse JSON: ' + err.message;
+        }
+        resolve(entry);
+      };
+
+      reader.onerror = function(){
+        entry.status = 'error';
+        entry.error = 'Failed to read file.';
+        resolve(entry);
+      };
+
+      reader.readAsText(file);
+    });
+  }
+
+  async function handleFiles(fileListInput){
+    hideStatus();
+    const files = Array.from(fileListInput).filter(f => {
+      // Basic guard: only accept .json files (case-insensitive) or unspecified type
+      return /\.json$/i.test(f.name);
+    });
+
+    if(files.length === 0){
+      showStatus('error', 'No valid JSON files selected', 'Please choose files with a .json extension.');
+      return;
+    }
+
+    const newEntries = await Promise.all(files.map(readFileAsJson));
+    loadedFiles = loadedFiles.concat(newEntries);
+    renderFileList();
+    updateConvertButtonState();
+
+    const errorCount = newEntries.filter(e => e.status === 'error').length;
+    if(errorCount > 0){
+      showStatus('error', errorCount + ' file(s) could not be read', 'Check the highlighted files below and remove or replace them.');
+    }
+  }
+
+  /* ============================================================
+     DRAG & DROP + INPUT WIRING
+  ============================================================ */
+  fileInput.addEventListener('change', (e) => {
+    if(e.target.files && e.target.files.length){
+      handleFiles(e.target.files);
+    }
+    fileInput.value = ''; // allow re-selecting the same file later
+  });
+
+  ['dragenter','dragover'].forEach(evt => {
+    dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('dragover');
+    });
+  });
+
+  ['dragleave','drop'].forEach(evt => {
+    dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('dragover');
+    });
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    if(dt && dt.files && dt.files.length){
+      handleFiles(dt.files);
+    }
+  });
+
+  resetBtn.addEventListener('click', () => {
+    loadedFiles = [];
+    renderFileList();
+    updateConvertButtonState();
+    hideStatus();
+    modeSelect.selectedIndex = 0;
+    consolidateCheckbox.checked = false;
+  });
+
+  /* ============================================================
+     NUMERIC / SAFE-ACCESS HELPERS
+     ------------------------------------------------------------
+     GST JSON exports sometimes carry amounts as strings, sometimes
+     omit fields entirely, and sometimes omit whole sections. These
+     helpers keep every mapper below resilient to all three, and
+     guarantee that anything destined for a numeric Excel column is
+     a real JS float (never a string, never NaN/undefined) so SUM()
+     and other formulas work correctly on the output workbook.
+  ============================================================ */
+
+  // Always returns a real JS number (float) for Excel — never a string,
+  // never NaN/undefined. Missing, null, or non-numeric input becomes 0.
+  function toNum(val){
+    if(val === null || val === undefined || val === '') return 0;
+    const n = parseFloat(val);
+    return Number.isNaN(n) ? 0 : n;
+  }
+
+  // Always returns a plain, trimmed string for text fields. Missing or
+  // null input becomes an empty string rather than "undefined"/"null".
+  function toStr(val){
+    return (val === null || val === undefined) ? '' : String(val);
+  }
+
+  // Wraps one section's push logic so a malformed/missing section can't
+  // abort the rest of the parse. Runs fn() and swallows/logs any error,
+  // so a single bad table in the JSON degrades gracefully instead of
+  // crashing the whole conversion.
+  function trySection(label, fn){
+    try {
+      fn();
+    } catch(err){
+      console.error('Section "' + label + '" failed:', err);
+    }
+  }
+
+  /* ============================================================
+     GSTR-1 PARSING FUNCTION (per parsing_logic.js schema)
+     ------------------------------------------------------------
+     Every table is optional-chained end to end (?. and ??) so a
+     missing key at any depth (e.g. no b2b at all, or a receiver
+     with no inv[]) simply produces no rows for that sheet instead
+     of throwing. Every table is additionally wrapped in trySection
+     as a second line of defense, and every numeric cell is coerced
+     through toNum() so it lands in Excel as a genuine float.
+  ============================================================ */
+  const parseGSTR1 = (jsonData) => {
+    const sheets = {};
+    const returnPeriod = toStr(jsonData?.fp ?? "UNKNOWN") || "UNKNOWN";
+
+    // 1. B2B Invoices (ctin -> inv -> itms -> itm_det)
+    trySection("B2B", () => {
+      if(jsonData?.b2b?.length){
+        let b2bData = [];
+        jsonData.b2b.forEach(receiver => {
+          receiver?.inv?.forEach(invoice => {
+            invoice?.itms?.forEach(item => {
+              b2bData.push({
+                "Return Period": returnPeriod,
+                "Receiver GSTIN": toStr(receiver?.ctin),
+                "Invoice Number": toStr(invoice?.inum),
+                "Invoice Date": toStr(invoice?.idt),
+                "Invoice Value": toNum(invoice?.val),
+                "Place of Supply": toStr(invoice?.pos),
+                "Reverse Charge": toStr(invoice?.rchrg),
+                "Invoice Type": toStr(invoice?.inv_typ),
+                "Rate": toNum(item?.itm_det?.rt),
+                "Taxable Value": toNum(item?.itm_det?.txval),
+                "Central Tax": toNum(item?.itm_det?.camt),
+                "State/UT Tax": toNum(item?.itm_det?.samt),
+                "Integrated Tax": toNum(item?.itm_det?.iamt),
+                "Cess": toNum(item?.itm_det?.csamt)
+              });
+            });
+          });
+        });
+        if(b2bData.length) sheets["B2B"] = b2bData;
+      }
+    });
+
+    // 2. B2CS (Flat Array)
+    trySection("B2CS", () => {
+      if(jsonData?.b2cs?.length){
+        const b2csData = jsonData.b2cs.map(item => ({
+          "Return Period": returnPeriod,
+          "Type": toStr(item?.typ),
+          "Place of Supply": toStr(item?.pos),
+          "Supply Type": toStr(item?.sply_ty),
+          "Rate": toNum(item?.rt),
+          "Taxable Value": toNum(item?.txval),
+          "Central Tax": toNum(item?.camt),
+          "State/UT Tax": toNum(item?.samt),
+          "Integrated Tax": toNum(item?.iamt),
+          "Cess": toNum(item?.csamt)
+        }));
+        if(b2csData.length) sheets["B2CS"] = b2csData;
+      }
+    });
+
+    // 3. HSN Summary (handles separate hsn_b2b and hsn_b2c targets)
+    trySection("HSN Summary", () => {
+      let hsnData = [];
+      jsonData?.hsn?.hsn_b2b?.forEach(item => {
+        hsnData.push({
+          "Return Period": returnPeriod,
+          "HSN Category": "B2B",
+          "HSN/SAC": toStr(item?.hsn_sc),
+          "Description": toStr(item?.desc),
+          "UQC": toStr(item?.uqc),
+          "Quantity": toNum(item?.qty),
+          "Taxable Value": toNum(item?.txval),
+          "Rate": toNum(item?.rt),
+          "Central Tax": toNum(item?.camt),
+          "State/UT Tax": toNum(item?.samt)
+        });
+      });
+      jsonData?.hsn?.hsn_b2c?.forEach(item => {
+        hsnData.push({
+          "Return Period": returnPeriod,
+          "HSN Category": "B2C",
+          "HSN/SAC": toStr(item?.hsn_sc),
+          "Description": toStr(item?.desc),
+          "UQC": toStr(item?.uqc),
+          "Quantity": toNum(item?.qty),
+          "Taxable Value": toNum(item?.txval),
+          "Rate": toNum(item?.rt),
+          "Central Tax": toNum(item?.camt),
+          "State/UT Tax": toNum(item?.samt)
+        });
+      });
+      if(hsnData.length) sheets["HSN Summary"] = hsnData;
+    });
+
+    // 4. Documents Issued (doc_det -> docs)
+    trySection("Documents Issued", () => {
+      if(jsonData?.doc_issue?.doc_det?.length){
+        let docData = [];
+        jsonData.doc_issue.doc_det.forEach(group => {
+          group?.docs?.forEach(doc => {
+            docData.push({
+              "Return Period": returnPeriod,
+              "Doc Nature Code": toNum(group?.doc_num),
+              "From Serial": toStr(doc?.from),
+              "To Serial": toStr(doc?.to),
+              "Total Number": toNum(doc?.totnum),
+              "Cancelled": toNum(doc?.cancel),
+              "Net Issued": toNum(doc?.net_issue)
+            });
+          });
+        });
+        if(docData.length) sheets["Documents Issued"] = docData;
+      }
+    });
+
+    return sheets;
+  };
+
+  /* ============================================================
+     GSTR-3B PARSING FUNCTION (per parsing_logic.js schema)
+     ------------------------------------------------------------
+     Same defensive treatment as parseGSTR1: optional chaining plus
+     nullish coalescing on every access, trySection wrapping around
+     every table, and toNum()/toStr() coercion on every cell so a
+     missing section is silently skipped rather than crashing the
+     conversion, and every amount lands in Excel as a real float.
+  ============================================================ */
+  const parseGSTR3B = (jsonData) => {
+    const sheets = {};
+    const period = toStr(jsonData?.ret_period ?? "UNKNOWN") || "UNKNOWN";
+
+    const flatTax = (obj) => ({
+      "Taxable Value": toNum(obj?.txval),
+      "Integrated Tax": toNum(obj?.iamt),
+      "Central Tax": toNum(obj?.camt),
+      "State/UT Tax": toNum(obj?.samt),
+      "Cess": toNum(obj?.csamt)
+    });
+
+    // 1. Table 3.1: Supplies Breakdown
+    trySection("3.1 Tax Details", () => {
+      if(jsonData?.sup_details){
+        const s = jsonData.sup_details;
+        sheets["3.1 Tax Details"] = [
+          { "Return Period": period, "Supply Type": "Outward Taxable (Other than Zero, Nil, Exempt)", ...flatTax(s?.osup_det) },
+          { "Return Period": period, "Supply Type": "Outward Taxable (Zero Rated)", ...flatTax(s?.osup_zero) },
+          { "Return Period": period, "Supply Type": "Other Outward (Nil Rated, Exempt)", ...flatTax(s?.osup_nil_exmp) },
+          { "Return Period": period, "Supply Type": "Inward Supplies (Reverse Charge)", ...flatTax(s?.isup_rev) },
+          { "Return Period": period, "Supply Type": "Non-GST Outward Supplies", ...flatTax(s?.osup_nongst) }
+        ];
+      }
+    });
+
+    // 2. Table 4: Eligible ITC
+    trySection("4 Eligible ITC", () => {
+      if(jsonData?.itc_elg){
+        let itcData = [];
+        const itc = jsonData.itc_elg;
+        itc?.itc_avl?.forEach(x => itcData.push({ "Return Period": period, "Category": `Available - ${toStr(x?.ty)}`, ...flatTax(x) }));
+        itc?.itc_rev?.forEach(x => itcData.push({ "Return Period": period, "Category": `Reversed - ${toStr(x?.ty)}`, ...flatTax(x) }));
+        if(itc?.itc_net) itcData.push({ "Return Period": period, "Category": "Net ITC Available", ...flatTax(itc.itc_net) });
+        itc?.itc_inelg?.forEach(x => itcData.push({ "Return Period": period, "Category": `Ineligible - ${toStr(x?.ty)}`, ...flatTax(x) }));
+        if(itcData.length) sheets["4 Eligible ITC"] = itcData;
+      }
+    });
+
+    // 3. Table 5.1: Interest & Late Fees
+    trySection("5.1 Interest & Late Fees", () => {
+      if(jsonData?.intr_ltfee){
+        sheets["5.1 Interest & Late Fees"] = [
+          { "Return Period": period, "Type": "Interest Details", ...flatTax(jsonData.intr_ltfee?.intr_details) },
+          { "Return Period": period, "Type": "Late Fee Details", ...flatTax(jsonData.intr_ltfee?.ltfee_details) }
+        ];
+      }
+    });
+
+    // 4. Advanced Ledger: Table 6.1 Payment Breakdown
+    trySection("6.1 Payment Breakdown", () => {
+      const list = jsonData?.taxpayble?.returnsDbCdredList;
+      if(!list) return;
+
+      // 4a. Liabilities (tax_pay)
+      if(list.tax_pay?.length){
+        const rows = list.tax_pay.map(p => ({
+          "Return Period": period,
+          "Liability ID": toStr(p?.liab_id),
+          "Transaction Date": toStr(p?.trandate),
+          "IGST [Tax]": toNum(p?.igst?.tx),
+          "IGST [Intr]": toNum(p?.igst?.intr),
+          "IGST [Total]": toNum(p?.igst?.tot),
+          "CGST [Tax]": toNum(p?.cgst?.tx),
+          "CGST [Intr]": toNum(p?.cgst?.intr),
+          "CGST [Total]": toNum(p?.cgst?.tot),
+          "SGST [Tax]": toNum(p?.sgst?.tx),
+          "SGST [Intr]": toNum(p?.sgst?.intr),
+          "SGST [Total]": toNum(p?.sgst?.tot)
+        }));
+        if(rows.length) sheets["6.1 Tax Payable"] = rows;
+      }
+
+      // 4b. Cash Offsets (pd_by_cash)
+      if(list.tax_paid?.pd_by_cash?.length){
+        const rows = list.tax_paid.pd_by_cash.map(c => ({
+          "Return Period": period,
+          "Debit ID": toStr(c?.debit_id),
+          "Transaction Date": toStr(c?.trandate),
+          "IGST Paid": toNum(c?.igst?.tx),
+          "CGST Paid": toNum(c?.cgst?.tx),
+          "SGST Paid": toNum(c?.sgst?.tx),
+          "Cess Paid": toNum(c?.cess?.tx)
+        }));
+        if(rows.length) sheets["6.1 Paid via Cash"] = rows;
+      }
+
+      // 4c. ITC Offsets (pd_by_itc)
+      if(list.tax_paid?.pd_by_itc?.length){
+        const rows = list.tax_paid.pd_by_itc.map(i => ({
+          "Return Period": period,
+          "Debit ID": toStr(i?.debit_id),
+          "Transaction Date": toStr(i?.trandate),
+          "IGST vs IGST": toNum(i?.igst_igst_amt),
+          "CGST vs CGST": toNum(i?.cgst_cgst_amt),
+          "SGST vs SGST": toNum(i?.sgst_sgst_amt),
+          "IGST utilized for CGST": toNum(i?.igst_cgst_amt),
+          "IGST utilized for SGST": toNum(i?.igst_sgst_amt)
+        }));
+        if(rows.length) sheets["6.1 Paid via ITC"] = rows;
+      }
+    });
+
+    return sheets;
+  };
+
+  /* ============================================================
+     SHEET ASSEMBLY / WORKBOOK BUILDING
+     ------------------------------------------------------------
+     "Sheets data" is a plain object keyed by sheet name, valued
+     by an array of flat row objects — the common currency between
+     a single file's parsing output and a consolidated merge of
+     several files' parsing output.
+  ============================================================ */
+
+  // Dispatches to the correct parser for the selected mode. Wrapped so that
+  // even a totally unexpected top-level failure (e.g. jsonData isn't an
+  // object at all) degrades to "no sheets" instead of crashing the file.
+  function getSheetsDataForMode(jsonData, mode){
+    try {
+      if(mode === 'GSTR-1'){
+        return parseGSTR1(jsonData ?? {}) ?? {};
+      } else if(mode === 'GSTR-3B'){
+        return parseGSTR3B(jsonData ?? {}) ?? {};
+      }
+      throw new Error('Unknown mode: ' + mode);
+    } catch(err){
+      if(err.message && err.message.indexOf('Unknown mode') === 0) throw err;
+      console.error('Parsing failed for mode ' + mode + ':', err);
+      return {};
+    }
+  }
+
+  // Merges several per-file "sheets data" objects into one, concatenating
+  // same-named sheets across files (e.g. January B2B + February B2B).
+  function mergeSheetsData(sheetsDataList){
+    const merged = {};
+    sheetsDataList.forEach(sheetsData => {
+      Object.keys(sheetsData).forEach(sheetName => {
+        if(!merged[sheetName]) merged[sheetName] = [];
+        merged[sheetName] = merged[sheetName].concat(sheetsData[sheetName]);
+      });
+    });
+    return merged;
+  }
+
+  /* ============================================================
+     CHRONOLOGICAL SORTING (Consolidation mode)
+     ------------------------------------------------------------
+     Every row carries a "Return Period" in GSTN's native MMYYYY
+     format (e.g. "052026" = May 2026). MMYYYY does not sort
+     correctly as a plain string/number (e.g. "122025" < "012026"
+     numerically, which is backwards), so we convert each period to
+     a YYYYMM sort key before comparing.
+  ============================================================ */
+
+  // Converts an MMYYYY "Return Period" string into a YYYYMM integer
+  // sort key (e.g. "052026" -> 202605, "122025" -> 202512). Returns
+  // null for anything that isn't a well-formed MMYYYY value (missing
+  // period, "UNKNOWN", malformed strings, out-of-range month), so
+  // callers can push unparseable rows to the end instead of crashing.
+  function returnPeriodToSortKey(periodStr){
+    const s = toStr(periodStr).trim();
+    const match = /^(\d{2})(\d{4})$/.exec(s);
+    if(!match) return null;
+    const mm = parseInt(match[1], 10);
+    const yyyy = parseInt(match[2], 10);
+    if(mm < 1 || mm > 12) return null;
+    return (yyyy * 100) + mm;
+  }
+
+  // Sorts a sheet's rows oldest -> newest by "Return Period" (MMYYYY).
+  // Rows with a missing/unparseable period are stable-sorted to the end
+  // rather than throwing, so one bad value can't break the whole sheet.
+  function sortRowsByReturnPeriod(rows){
+    return rows
+      .map((row, idx) => ({ row, idx, key: returnPeriodToSortKey(row?.["Return Period"]) }))
+      .sort((a, b) => {
+        if(a.key === null && b.key === null) return a.idx - b.idx; // stable
+        if(a.key === null) return 1;  // unknown periods sort last
+        if(b.key === null) return -1;
+        if(a.key !== b.key) return a.key - b.key;
+        return a.idx - b.idx; // stable within the same period
+      })
+      .map(entry => entry.row);
+  }
+
+  // Applies chronological sorting to every sheet in a merged "sheets
+  // data" object. Sheets whose rows have no "Return Period" column
+  // (e.g. none of the parsed tables include one) are left as-is.
+  function sortMergedSheetsChronologically(sheetsData){
+    const sorted = {};
+    Object.keys(sheetsData).forEach(sheetName => {
+      const rows = sheetsData[sheetName];
+      sorted[sheetName] = (rows && rows.length) ? sortRowsByReturnPeriod(rows) : rows;
+    });
+    return sorted;
+  }
+
+  // Excel sheet names: max 31 chars, and can't contain : \ / ? * [ ]
+  function sanitizeSheetName(name){
+    let s = String(name).replace(/[:\\\/\?\*\[\]]/g, '-');
+    if(s.length > 31) s = s.substring(0, 31);
+    return s || 'Sheet';
+  }
+
+  /* ============================================================
+     AUTO-FIT COLUMN WIDTHS
+     ------------------------------------------------------------
+     SheetJS doesn't auto-size columns, so wide values (long GSTINs,
+     descriptions, dates) get visually truncated when the workbook
+     is opened in Excel. We compute a per-column character width —
+     the longer of the header label or any cell's stringified value
+     — and apply it via the worksheet's `!cols` property.
+  ============================================================ */
+
+  // Computes SheetJS `!cols` width entries ({ wch }) for a set of rows,
+  // one per column, based on the longest string among the header and
+  // every cell in that column, plus a small padding for readability.
+  function computeColumnWidths(rows, padding){
+    if(!rows || !rows.length) return [];
+    const pad = (typeof padding === 'number') ? padding : 2;
+    const headers = Object.keys(rows[0]);
+
+    return headers.map(header => {
+      let maxLen = String(header).length;
+      rows.forEach(row => {
+        const val = row[header];
+        const len = (val === null || val === undefined) ? 0 : String(val).length;
+        if(len > maxLen) maxLen = len;
+      });
+      return { wch: maxLen + pad };
+    });
+  }
+
+  // Builds a SheetJS workbook from a "sheets data" object. Sheets with no
+  // rows are skipped; if every sheet is empty, a placeholder sheet is added
+  // so the workbook still opens cleanly. Every sheet gets auto-fit column
+  // widths so no value is visually truncated when opened in Excel.
+  function buildWorkbookFromSheetsData(sheetsData){
+    const wb = XLSX.utils.book_new();
+    let sheetsAdded = 0;
+
+    Object.keys(sheetsData).forEach(sheetName => {
+      const rows = sheetsData[sheetName];
+      if(rows && rows.length > 0){
+        const ws = XLSX.utils.json_to_sheet(rows);
+        ws['!cols'] = computeColumnWidths(rows, 2);
+        XLSX.utils.book_append_sheet(wb, ws, sanitizeSheetName(sheetName));
+        sheetsAdded++;
+      }
+    });
+
+    if(sheetsAdded === 0){
+      const ws = XLSX.utils.aoa_to_sheet([["No data found for this mode in the uploaded file(s)."]]);
+      XLSX.utils.book_append_sheet(wb, ws, "Empty");
+    }
+
+    return { workbook: wb, sheetsAdded };
+  }
+
+  function triggerDownload(workbook, filename){
+    XLSX.writeFile(workbook, filename);
+  }
+
+  function baseName(filename){
+    return filename.replace(/\.json$/i, '');
+  }
+
+  /* ============================================================
+     MAIN CONVERT HANDLER
+  ============================================================ */
+  convertBtn.addEventListener('click', async () => {
+    hideStatus();
+    const okEntries = loadedFiles.filter(f => f.status === 'ok');
+
+    if(okEntries.length === 0){
+      showStatus('error', 'Nothing to convert', 'Add at least one valid JSON file first.');
+      return;
+    }
+
+    setConvertLoading(true);
+    const mode = modeSelect.value;
+    const consolidate = consolidateCheckbox.checked;
+    const successNames = [];
+    const failedNames = [];
+
+    try {
+      // Small delay so the loading state visibly renders before heavy sync work
+      await new Promise(r => setTimeout(r, 50));
+
+      if(consolidate){
+        // Map every file individually first, then merge same-named sheets
+        // together (e.g. B2B from Jan + B2B from Feb) into one workbook.
+        const perFileSheetsData = [];
+        okEntries.forEach(entry => {
+          try {
+            perFileSheetsData.push(getSheetsDataForMode(entry.data, mode));
+            successNames.push(entry.name);
+          } catch(err){
+            failedNames.push(entry.name + ' (' + err.message + ')');
+          }
+        });
+
+        if(perFileSheetsData.length > 0){
+          const merged = mergeSheetsData(perFileSheetsData);
+          const chronological = sortMergedSheetsChronologically(merged);
+          const { workbook } = buildWorkbookFromSheetsData(chronological);
+          const outName = mode.replace(/\s+/g,'') + '_Consolidated_' + Date.now() + '.xlsx';
+          triggerDownload(workbook, outName);
+        }
+      } else {
+        // One workbook per file
+        okEntries.forEach(entry => {
+          try {
+            const sheetsData = getSheetsDataForMode(entry.data, mode);
+            const { workbook } = buildWorkbookFromSheetsData(sheetsData);
+            const outName = baseName(entry.name) + '_' + mode.replace(/\s+/g,'') + '.xlsx';
+            triggerDownload(workbook, outName);
+            successNames.push(entry.name);
+          } catch(err){
+            failedNames.push(entry.name + ' (' + err.message + ')');
+          }
+        });
+      }
+
+      if(failedNames.length === 0){
+        showStatus(
+          'success',
+          'Converted ' + successNames.length + ' file(s) successfully',
+          consolidate
+            ? 'A consolidated workbook with merged sheets has been downloaded.'
+            : 'One workbook was downloaded per input file.'
+        );
+      } else if(successNames.length > 0){
+        showStatus(
+          'error',
+          'Completed with some errors',
+          'Succeeded: ' + successNames.length + '. Failed: <ul>' + failedNames.map(n => '<li>'+n+'</li>').join('') + '</ul>'
+        );
+      } else {
+        showStatus(
+          'error',
+          'Conversion failed',
+          '<ul>' + failedNames.map(n => '<li>'+n+'</li>').join('') + '</ul>'
+        );
+      }
+    } catch(err){
+      showStatus('error', 'Unexpected error during conversion', err.message);
+    } finally {
+      setConvertLoading(false);
+    }
+  });
+
+  /* ============================================================
+     INIT
+  ============================================================ */
+  updateConvertButtonState();
+})();
+</script>
+</body>
+</html>
