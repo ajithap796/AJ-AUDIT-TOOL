@@ -1,0 +1,23 @@
+AJ-AUDIT-TOOL hardening - batch 1 (22 Nov 2026)
+
+WHAT CHANGED (5 tools)
+  Bank statement.html, HSM & Co Voucher Maker.html, gst-2a-2b-consolidator.html,
+  json-to-excel.html, tax-pdf-to-excel.html
+
+1. Libraries now live inside the repo (vendor/ folder) instead of loading from
+   cdn.jsdelivr.net / cdnjs.cloudflare.com. A hacked or changed CDN file can no
+   longer run on your clients' data. Tools also work offline.
+2. Each page has a Content-Security-Policy that blocks ALL network requests
+   (connect-src 'none'), outside images, plugins and form posts. Data cannot be
+   sent out even if a bug or bad library tried.
+3. chart.js was unpinned (always "latest"). Now fixed at 4.6.1.
+4. tax-pdf-to-excel: pdf.js was loaded from the CDN; now local (4.10.38).
+   Its font link pointed to a version that does not exist (5.2.7), so it was
+   already falling back to Georgia. Link removed, look unchanged.
+
+NOT CHANGED / STILL TO DO
+  - xlsx 0.18.5 kept (same version as before). Known issues are fixed only in
+    SheetJS 0.20.x, which is not on npm. Risk is low for your own files.
+  - Not touched yet: SBI.html, Not SBI.html, Pdf Unlocker.html,
+    GST 2A Splitter.html, StickerPrint.html, pdf-workspace.html.
+  - Google Fonts is still allowed (fonts only).
