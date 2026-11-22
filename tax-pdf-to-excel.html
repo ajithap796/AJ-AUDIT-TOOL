@@ -2,5 +2,250 @@
 <html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'none'; worker-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AJITH AIS Extract</title>
 <script src="vendor/xlsx.full.min.js"></script>
 <style>:root{--ink:#092f4b;--blue:#087bb7;--mist:#eef7fb;--line:#c9e0eb;--green:#08724d}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(145deg,#f7fbfd,#e6f2f7);color:var(--ink);font-family:"Libre Caslon Condensed",Georgia,serif}.wrap{max-width:1040px;margin:auto;padding:28px}.back{color:var(--blue);text-decoration:none;font-size:16px}.hero{display:grid;grid-template-columns:1fr auto;gap:25px;margin:16px 0 22px;padding:34px 38px;border-radius:24px;background:linear-gradient(118deg,#063957,#087db7);color:#fff;box-shadow:0 18px 45px #0b587529}.hero h1{margin:8px 0 0;font-size:clamp(38px,6vw,64px);line-height:.85}.hero p{max-width:590px;color:#d7f3ff;font-size:18px;margin:17px 0 0}.mark{align-self:end;font-size:65px;opacity:.24}.badge{display:inline-block;background:#dff5e9;color:var(--green);border-radius:99px;padding:5px 11px;font-size:13px}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}.panel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:0 8px 25px #1954700e}.panel h2{margin:0;font-size:29px}.panel p{color:#657d8c;font-size:16px}.drop{margin-top:18px;border:2px dashed #70bee3;border-radius:16px;padding:26px;text-align:center;background:var(--mist)}.drop strong{font-size:20px}.file-picker{display:block;width:min(100%,430px);margin:18px auto 0;padding:10px;border:1px solid #9dcee4;border-radius:10px;background:#fff;color:#315468;font:inherit;cursor:pointer}.file-picker::file-selector-button{margin-right:12px;border:0;border-radius:7px;padding:8px 11px;background:var(--blue);color:#fff;font:inherit;cursor:pointer}.button{margin-top:14px;border:0;border-radius:10px;padding:12px 19px;background:var(--blue);color:#fff;font:inherit;font-size:17px;cursor:pointer;box-shadow:0 7px 15px #087bb73b}.button:hover{background:#075f91}.button:disabled{opacity:.42;cursor:not-allowed}.selected{margin-top:15px;color:#567080;font-size:15px;white-space:pre-wrap}.status{min-height:45px;white-space:pre-wrap;margin-top:18px;padding:13px;border-radius:11px;background:#e7f6fd;color:#075d87}.warning{margin-top:14px;padding:13px;border-radius:11px;background:#fff0d6;color:#815009}.hidden{display:none}.steps{padding:0;margin:18px 0 0;list-style:none;counter-reset:step}.steps li{counter-increment:step;margin:14px 0;padding-left:38px;position:relative;color:#527080}.steps li:before{content:counter(step);position:absolute;left:0;top:-3px;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#dff3fc;color:#087bb7;font-weight:bold}@media(max-width:700px){.wrap{padding:16px}.hero{padding:28px 23px}.grid{grid-template-columns:1fr}.mark{display:none}}</style></head>
-<body><main class="wrap"><a class="back" href="index.html">← Back to Audit Studio</a><section class="hero"><div><span class="badge">Browser-only processing</span><h1>AIS / TIS<br>to Excel</h1><p>Choose AIS or TIS and create a reviewable workbook with source-page text. Nothing is uploaded.</p></div><div class="mark">▤</div></section><section class="grid"><div class="panel"><h2>Start an extract</h2><p>Select a statement type, then choose its PDF or PDFs.</p><label for="docType">Statement type</label><select id="docType" class="file-picker"><option value="AIS">AIS</option><option value="TIS">TIS</option></select><div class="drop" id="drop"><strong>Drop tax PDFs here</strong><div class="selected">or choose them from your device</div><input class="file-picker" id="pick" type="file" accept="application/pdf,.pdf" multiple aria-label="Choose tax PDF files"><button class="button" type="button" id="choose">Choose PDF files</button></div><div id="files" class="selected">No files selected.</div><div id="fileProtocolWarning" class="warning hidden">This tool needs to be opened through the website or a localhost address. Opening this page directly as a file prevents the PDF reader from starting.</div><div id="locked" class="warning hidden">A protected PDF needs its owner-provided password first. <a href="https://ajithap796.github.io/Unlocker/" target="_blank" rel="noreferrer">Open AJITH PDF Unlocker ↗</a>, download the unlocked copy, then select it here.</div><button class="button" id="convert" disabled>Build Excel workbook →</button><div class="status" id="status">Select a PDF to begin.</div></div><aside class="panel"><h2>What you receive</h2><ul class="steps"><li>A Summary sheet showing source file, type and page count.</li><li>An Extracted Pages sheet preserving each page’s text for audit traceability.</li><li>A local Excel download ready for working-paper references.</li></ul></aside></section></main>
-<script>if(location.protocol==="file:"){document.querySelector("#fileProtocolWarning").classList.remove("hidden");document.querySelector("#status").textContent="Open this tool through localhost or the website before selecting PDFs."}</script><script type="module">import*as pdfjsLib from'./vendor/pdfjs/pdf.min.mjs';pdfjsLib.GlobalWorkerOptions.workerSrc='./vendor/pdfjs/pdf.worker.min.mjs';let files=[];const q=s=>document.querySelector(s),status=t=>q('#status').textContent=t;function pageLines(content){const rows=[];for(const item of content.items||[]){const text=String(item.str||'').trim();if(!text)continue;const x=Number(item.transform?.[4]||0),y=Number(item.transform?.[5]||0);let row=rows.find(r=>Math.abs(r.y-y)<2.5);if(!row){row={y,parts:[]};rows.push(row)}row.parts.push({x,text})}return rows.sort((a,b)=>b.y-a.y).map(r=>r.parts.sort((a,b)=>a.x-b.x).map(p=>p.text).join(' ').replace(/\s+/g,' ').trim()).filter(Boolean)}async function isLocked(file){try{const d=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;d.destroy();return false}catch(e){return e.name==='PasswordException'||/password/i.test(e.message)}}async function add(list){files=[...list].map(file=>({file,locked:false}));if(!files.length)return;status('Checking document access…');for(const x of files)x.locked=await isLocked(x.file);q('#files').textContent=files.map(x=>x.file.name+(x.locked?' · protected':' · ready')).join('\n');q('#locked').classList.toggle('hidden',!files.some(x=>x.locked));q('#convert').disabled=!files.some(x=>!x.locked);status(files.filter(x=>!x.locked).length+' unlocked PDF(s) ready.')}q('#docType').onchange=()=>status(q('#docType').value+' selected. Choose matching PDF files.');q('#choose').onclick=()=>q('#pick').click();q('#pick').onchange=e=>add(e.target.files);q('#drop').ondragover=e=>e.preventDefault();q('#drop').ondrop=e=>{e.preventDefault();add(e.dataTransfer.files)};q('#convert').onclick=async()=>{try{const summary=[],pages=[];for(const x of files.filter(x=>!x.locked)){status('Extracting '+x.file.name+'…');const d=await pdfjsLib.getDocument({data:new Uint8Array(await x.file.arrayBuffer())}).promise;const type=q('#docType').value,firstPage=await d.getPage(1),firstText=(await firstPage.getTextContent()).items.map(v=>v.str||'').join(' ');if(type==='AIS'&&!/annual\s+information\s+statement/i.test(firstText)){summary.push({File:x.file.name,Type:'Not AIS',Pages:d.numPages,Status:'Skipped - the selected type is AIS'});continue}summary.push({File:x.file.name,Type:type,Pages:d.numPages,Processed:new Date().toLocaleString()});for(let i=1;i<=d.numPages;i++){const c=await(await d.getPage(i)).getTextContent(),lines=pageLines(c),text=lines.join('\n');const chars=text.replace(/\s/g,'').length;pages.push({File:x.file.name,Type:type,Page:i,Characters:chars,Extracted_Text:text,Extraction_Warning:chars<20?'No selectable text found; this page may be scanned and needs OCR.':''})}}const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),'Summary');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(pages),'Extracted Pages');XLSX.writeFile(wb,files[0].file.name.replace(/\.pdf$/i,'')+'_'+q('#docType').value.toLowerCase()+'_extracted.xlsx');status('Done — your Excel workbook was downloaded.')}catch(e){status('Could not convert: '+e.message)}};</script></body></html>
+<body><main class="wrap"><a class="back" href="index.html">← Back to Audit Studio</a><section class="hero"><div><span class="badge">Browser-only processing</span><h1>AIS / TIS<br>to Excel</h1><p>Choose AIS or TIS and create a reviewable workbook with source-page text. Nothing is uploaded.</p></div><div class="mark">▤</div></section><section class="grid"><div class="panel"><h2>Start an extract</h2><p>Select a statement type, then choose its PDF or PDFs.</p><label for="docType">Statement type</label><select id="docType" class="file-picker"><option value="AIS">AIS</option><option value="TIS">TIS</option></select><div class="status" id="typeNotice">AIS creates the matching 11-sheet workbook. Check the Extraction Review tab before relying on extracted rows.</div><div class="drop" id="drop"><strong>Drop tax PDFs here</strong><div class="selected">or choose them from your device</div><input class="file-picker" id="pick" type="file" accept="application/pdf,.pdf" multiple aria-label="Choose tax PDF files"><button class="button" type="button" id="choose">Choose PDF files</button></div><div id="files" class="selected">No files selected.</div><div id="fileProtocolWarning" class="warning hidden">This tool needs to be opened through the website or a localhost address. Opening this page directly as a file prevents the PDF reader from starting.</div><div id="locked" class="warning hidden">A protected PDF needs its owner-provided password first. <a href="https://ajithap796.github.io/Unlocker/" target="_blank" rel="noreferrer">Open AJITH PDF Unlocker ↗</a>, download the unlocked copy, then select it here.</div><button class="button" id="convert" disabled>Build Excel workbook →</button><div class="status" id="status">Select a PDF to begin.</div></div><aside class="panel"><h2>What you receive</h2><ul class="steps"><li>AIS sheets using the same names and columns as your sample workbook.</li><li>A count check for each AIS section, with items needing attention listed separately.</li><li>Source-page text so you can verify rows against the original PDF.</li><li>TIS structured extraction is marked as under development.</li></ul></aside></section></main>
+<script>if(location.protocol==="file:"){document.querySelector("#fileProtocolWarning").classList.remove("hidden");document.querySelector("#status").textContent="Open this tool through localhost or the website before selecting PDFs."}</script><script type="module">
+import * as pdfjsLib from './vendor/pdfjs/pdf.min.mjs';
+import { AIS_HEADERS, AIS_SHEETS, extractAISDocument } from './ais-extractor.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.mjs';
+
+let files = [];
+const q = selector => document.querySelector(selector);
+const setStatus = message => { q('#status').textContent = message; };
+const fileKey = file => `${file.name}|${file.size}|${file.lastModified}`;
+
+function updateTypeNotice() {
+  const type = q('#docType').value;
+  q('#typeNotice').textContent = type === 'AIS'
+    ? 'AIS creates the matching 11-sheet workbook. Check the Extraction Review tab before relying on extracted rows.'
+    : 'TIS structured extraction is under development. This option currently saves source-page text for review.';
+}
+
+function pageLines(content) {
+  const rows = [];
+  for (const item of content.items || []) {
+    const text = String(item.str || '').trim();
+    if (!text) continue;
+    const x = Number(item.transform?.[4] || 0);
+    const y = Number(item.transform?.[5] || 0);
+    let row = rows.find(candidate => Math.abs(candidate.y - y) < 2.5);
+    if (!row) { row = { y, parts: [] }; rows.push(row); }
+    row.parts.push({ x, text });
+  }
+  return rows.sort((a, b) => b.y - a.y)
+    .map(row => row.parts.sort((a, b) => a.x - b.x).map(part => part.text).join(' ').replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+}
+
+async function openPdf(file) {
+  const loading = pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
+  return loading.promise;
+}
+
+async function isLocked(file) {
+  let doc;
+  try {
+    doc = await openPdf(file);
+    return false;
+  } catch (error) {
+    return error?.name === 'PasswordException' || /password/i.test(error?.message || '');
+  } finally {
+    if (doc) await doc.destroy().catch(() => {});
+  }
+}
+
+async function add(list) {
+  const incoming = Array.from(list || []);
+  if (!incoming.length) return;
+  const known = new Set(files.map(item => fileKey(item.file)));
+  for (const file of incoming) {
+    if (known.has(fileKey(file))) continue;
+    known.add(fileKey(file));
+    files.push({ file, locked: false });
+  }
+  setStatus('Checking document access…');
+  for (const item of files) item.locked = await isLocked(item.file);
+  q('#files').textContent = files.length
+    ? files.map(item => `${item.file.name}${item.locked ? ' · protected' : ' · ready'}`).join('\n')
+    : 'No files selected.';
+  q('#locked').classList.toggle('hidden', !files.some(item => item.locked));
+  q('#convert').disabled = !files.some(item => !item.locked);
+  const ready = files.filter(item => !item.locked).length;
+  setStatus(ready ? `${ready} unlocked PDF(s) ready.` : 'Select an unlocked PDF to begin.');
+}
+
+function addSheet(wb, name, rows, widths) {
+  const sheet = XLSX.utils.aoa_to_sheet(rows);
+  if (widths) sheet['!cols'] = widths.map(width => ({ wch: width }));
+  XLSX.utils.book_append_sheet(wb, sheet, name);
+}
+
+function rawPages(doc, file, type) {
+  return (async () => {
+    const pages = [];
+    for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber++) {
+      const page = await doc.getPage(pageNumber);
+      const content = await page.getTextContent();
+      const text = pageLines(content).join('\n');
+      const characters = text.replace(/\s/g, '').length;
+      pages.push({
+        File: file.name, Type: type, Page: pageNumber, Characters: characters,
+        Extracted_Text: text,
+        Extraction_Warning: characters < 20 ? 'No selectable text found. This page needs OCR and was not structurally extracted.' : ''
+      });
+      page.cleanup();
+    }
+    return pages;
+  })();
+}
+
+function buildAISSheets(wb, bundles) {
+  const financialYears = [...new Set(bundles.map(bundle => bundle.result.financialYear).filter(Boolean))];
+  const yearLabel = financialYears.length === 1 ? financialYears[0] : financialYears.length ? 'multiple financial years' : 'financial year not detected';
+  const multipleSources = bundles.length > 1;
+  for (const spec of AIS_SHEETS) {
+    if (spec.key === 'general') {
+      const rows = [[`Annual Information Statement (AIS) - ${yearLabel} - Part A: General Information`], []];
+      for (const [index, bundle] of bundles.entries()) {
+        if (multipleSources) rows.push(['Source PDF', bundle.file.name]);
+        rows.push(...bundle.result.generalInfo.map(([field, value]) => [field, value]));
+        if (multipleSources && index < bundles.length - 1) rows.push([]);
+      }
+      addSheet(wb, spec.name, rows, [30, 72]);
+      continue;
+    }
+    const baseHeaders = AIS_HEADERS[spec.key];
+    if (!baseHeaders) throw new Error(`The workbook layout for ${spec.name} is missing.`);
+    const headers = baseHeaders.slice();
+    const records = bundles.flatMap(bundle => bundle.result.records[spec.key] || []);
+    const rows = Array.from({ length: spec.headerRow + 1 }, () => []);
+    if (spec.title) rows[0] = [spec.title];
+    rows[spec.headerRow] = multipleSources ? [...headers, 'Source PDF', 'Source Page'] : headers;
+    for (const record of records) {
+      if (!Array.isArray(record.values) || record.values.length !== headers.length) {
+        throw new Error(`Output check failed for “${spec.name}”. No workbook was created.`);
+      }
+      rows.push(multipleSources ? [...record.values, record.file, record.page] : record.values);
+    }
+    addSheet(wb, spec.name, rows, headers.map(header => Math.min(40, Math.max(15, header.length + 2))));
+  }
+}
+
+function makeSummaryRows(summary) {
+  const headers = ['Source PDF', 'Type', 'Pages', 'Financial Year', 'AIS rows extracted', 'Count differences', 'Pages needing OCR', 'Extraction status'];
+  return [headers, ...summary.map(item => headers.map(header => item[header] ?? ''))];
+}
+
+function makeReviewRows(reviews, pages, summaries, bundles) {
+  const headers = ['Source PDF', 'Page', 'Information Code', 'Information Source', 'PDF Count', 'Rows Extracted', 'Check', 'Details'];
+  const rows = [headers];
+  for (const review of reviews) rows.push([
+    review.File, review.Page, review.Code, review.Source, review.PDF_Count ?? '',
+    review.Extracted_Rows, review.Status, review.Note
+  ]);
+  for (const bundle of bundles) {
+    const fields = new Map(bundle.result.generalInfo);
+    for (const field of ['PAN', 'Name of Assessee', 'Date of Birth']) {
+      if (!String(fields.get(field) || '').trim()) rows.push([bundle.file.name, 1, '', '', '', '', 'Field missing', `Could not read ${field} from the AIS cover page. Check the PDF and fill it in manually if needed.`]);
+    }
+    if (!bundle.result.financialYear) rows.push([bundle.file.name, 1, '', '', '', '', 'Field missing', 'Could not read the financial year from the PDF. Check the AIS cover page.']);
+  }
+  for (const page of pages.filter(item => item.Extraction_Warning)) rows.push([
+    page.File, page.Page, '', '', '', '', 'OCR needed', page.Extraction_Warning
+  ]);
+  for (const item of summaries.filter(row => row.Status.startsWith('Skipped'))) rows.push([
+    item['Source PDF'], '', '', '', '', '', 'Skipped', item.Status
+  ]);
+  const isTis = summaries.some(item => item.Type === 'TIS');
+  if (rows.length === 1) rows.push(['', '', '', '', '', '', isTis ? 'Under development' : 'No issues found', isTis ? 'TIS structured extraction is under development; only source-page text is included.' : 'Every mapped AIS section matches the count printed in the PDF.']);
+  return rows;
+}
+
+function messageFor(error, fileName) {
+  if (error?.name === 'PasswordException' || /password/i.test(error?.message || '')) return `Could not open “${fileName}”: the PDF is password protected. Unlock it with the owner-provided password, then select it again.`;
+  if (error?.name === 'InvalidPDFException') return `Could not read “${fileName}”: the file is damaged or is not a valid PDF.`;
+  if (error?.name === 'MissingPDFException') return `Could not read “${fileName}”: the file data was not available. Select it again.`;
+  return `Could not convert “${fileName}”: ${error?.message || 'an unexpected error occurred'}. No workbook was created.`;
+}
+
+q('#docType').onchange = () => { updateTypeNotice(); setStatus(`${q('#docType').value} selected. Choose matching PDF files.`); };
+q('#choose').onclick = () => q('#pick').click();
+q('#pick').onchange = event => { add(event.target.files); event.target.value = ''; };
+q('#drop').ondragover = event => event.preventDefault();
+q('#drop').ondrop = event => { event.preventDefault(); add(event.dataTransfer.files); };
+updateTypeNotice();
+
+q('#convert').onclick = async () => {
+  q('#convert').disabled = true;
+  const type = q('#docType').value;
+  const summary = [];
+  const pages = [];
+  const reviews = [];
+  const bundles = [];
+  let failedFileName = files.find(item => !item.locked)?.file.name || 'selected PDF';
+  try {
+    for (const item of files.filter(fileItem => !fileItem.locked)) {
+      failedFileName = item.file.name;
+      let doc;
+      try {
+        setStatus(`Reading ${item.file.name}…`);
+        doc = await openPdf(item.file);
+        const firstPage = await doc.getPage(1);
+        const firstText = (await firstPage.getTextContent()).items.map(part => part.str || '').join(' ');
+        if (type === 'AIS' && !/annual\s+information\s+statement/i.test(firstText)) {
+          const raw = await rawPages(doc, item.file, type);
+          pages.push(...raw);
+          summary.push({ 'Source PDF': item.file.name, Type: 'AIS', Pages: doc.numPages, 'Financial Year': '', 'AIS rows extracted': 0, 'Count differences': '', 'Pages needing OCR': raw.filter(page => page.Extraction_Warning).length, Status: 'Skipped — an AIS heading was not found. Source text is preserved for review.' });
+          continue;
+        }
+        if (type === 'AIS') {
+          setStatus(`Checking AIS tables in ${item.file.name}…`);
+          const result = await extractAISDocument(doc, item.file.name);
+          bundles.push({ file: item.file, result });
+          pages.push(...result.pages.map(page => ({ ...page, Type: 'AIS' })));
+          reviews.push(...result.reviews);
+          const countDifferences = result.reviews.filter(row => row.Status === 'Review needed').length;
+          const rowsExtracted = ['tds', 'dividend', 'savings', 'equity', 'mfSale', 'otherSale', 'buySec', 'buyMf'].reduce((sum, key) => sum + result.records[key].length, 0);
+          const ocrPages = result.pages.filter(page => page.Extraction_Warning).length;
+          const hasUnmapped = result.reviews.some(row => row.Status === 'Not mapped');
+          const fields = new Map(result.generalInfo);
+          const missingMainFields = ['PAN', 'Name of Assessee', 'Date of Birth'].some(field => !String(fields.get(field) || '').trim());
+          const statusText = countDifferences || hasUnmapped || missingMainFields || !result.financialYear || ocrPages
+            ? 'Review needed — see Extraction Review before using this workbook.'
+            : 'Structured extraction complete. All mapped row counts match the PDF.';
+          summary.push({ 'Source PDF': item.file.name, Type: 'AIS', Pages: doc.numPages, 'Financial Year': result.financialYear, 'AIS rows extracted': rowsExtracted, 'Count differences': countDifferences, 'Pages needing OCR': ocrPages, Status: statusText });
+        } else {
+          setStatus(`Extracting page text from ${item.file.name}…`);
+          const raw = await rawPages(doc, item.file, type);
+          pages.push(...raw);
+          summary.push({ 'Source PDF': item.file.name, Type: 'TIS', Pages: doc.numPages, 'Financial Year': '', 'AIS rows extracted': '', 'Count differences': '', 'Pages needing OCR': raw.filter(page => page.Extraction_Warning).length, Status: 'TIS structured extraction is under development; this workbook contains source-page text only.' });
+        }
+      } finally {
+        if (doc) await doc.destroy().catch(() => {});
+      }
+    }
+    if (!summary.length) throw new Error('No unlocked PDF was available. Select an unlocked PDF and try again.');
+    const wb = XLSX.utils.book_new();
+    if (type === 'AIS' && bundles.length) buildAISSheets(wb, bundles);
+    addSheet(wb, 'Summary', makeSummaryRows(summary), [36, 12, 10, 19, 18, 16, 16, 76]);
+    addSheet(wb, 'Extraction Review', makeReviewRows(reviews, pages, summary, bundles), [36, 10, 24, 42, 14, 16, 22, 80]);
+    addSheet(wb, 'Extracted Pages', [
+      ['Source PDF', 'Type', 'Page', 'Characters', 'Extracted Text', 'Extraction Warning'],
+      ...pages.map(page => [page.File, page.Type, page.Page, page.Characters, page.Extracted_Text, page.Extraction_Warning])
+    ], [36, 12, 10, 14, 110, 72]);
+    const firstName = files.find(item => !item.locked)?.file.name || 'statement.pdf';
+    const batch = summary.length > 1 ? '_batch' : '';
+    XLSX.writeFile(wb, `${firstName.replace(/\.pdf$/i, '')}${batch}_${type.toLowerCase()}_extracted.xlsx`);
+    const needingReview = reviews.filter(row => row.Status === 'Review needed' || row.Status === 'Not mapped').length + pages.filter(page => page.Extraction_Warning).length + bundles.reduce((sum, bundle) => { const fields = new Map(bundle.result.generalInfo); return sum + (['PAN', 'Name of Assessee', 'Date of Birth'].some(field => !String(fields.get(field) || '').trim()) || !bundle.result.financialYear ? 1 : 0); }, 0);
+    const skippedFiles = summary.filter(row => row.Status.startsWith('Skipped')).length;
+    if (type === 'TIS') setStatus('TIS text workbook created. Structured TIS extraction is still under development; source-page text is included.');
+    else if (skippedFiles) setStatus(`Workbook created. ${skippedFiles} file(s) were skipped; see Summary and Extraction Review.`);
+    else if (needingReview) setStatus(`Workbook created. ${needingReview} item(s) need review; see the Extraction Review tab.`);
+    else setStatus('Workbook created. AIS row counts match the PDF; see Summary and Extraction Review for the record.');
+  } catch (error) {
+    setStatus(messageFor(error, failedFileName));
+  } finally {
+    q('#convert').disabled = !files.some(item => !item.locked);
+  }
+};
+</script></body></html>
+
