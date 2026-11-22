@@ -235,7 +235,8 @@ q('#convert').onclick = async () => {
     const firstName = files.find(item => !item.locked)?.file.name || 'statement.pdf';
     const batch = summary.length > 1 ? '_batch' : '';
     XLSX.writeFile(wb, `${firstName.replace(/\.pdf$/i, '')}${batch}_${type.toLowerCase()}_extracted.xlsx`);
-    const needingReview = reviews.filter(row => row.Status === 'Review needed' || row.Status === 'Not mapped').length + pages.filter(page => page.Extraction_Warning).length + bundles.reduce((sum, bundle) => { const fields = new Map(bundle.result.generalInfo); return sum + (['PAN', 'Name of Assessee', 'Date of Birth'].some(field => !String(fields.get(field) || '').trim()) || !bundle.result.financialYear ? 1 : 0); }, 0);
+    const missingFieldCount = bundles.reduce((sum, bundle) => { const fields = new Map(bundle.result.generalInfo); return sum + ['PAN', 'Name of Assessee', 'Date of Birth'].filter(field => !String(fields.get(field) || '').trim()).length + (bundle.result.financialYear ? 0 : 1); }, 0);
+    const needingReview = reviews.filter(row => row.Status === 'Review needed' || row.Status === 'Not mapped').length + pages.filter(page => page.Extraction_Warning).length + missingFieldCount;
     const skippedFiles = summary.filter(row => row.Status.startsWith('Skipped')).length;
     if (type === 'TIS') setStatus('TIS text workbook created. Structured TIS extraction is still under development; source-page text is included.');
     else if (skippedFiles) setStatus(`Workbook created. ${skippedFiles} file(s) were skipped; see Summary and Extraction Review.`);
