@@ -1,20 +1,29 @@
 # AJITH Audit Studio
 
-The master dashboard is in `index.html`. It links to the production tools already published on GitHub Pages and includes the supplied local 2A/2B consolidator, tax-PDF-to-Excel converter and PDF workspace.
+Free, open-source browser tools for Indian GST, tax and audit work.
+Everything runs locally in your browser. Your files are never uploaded.
 
-## Free publishing
+**Live:** https://ajithap796.github.io/AJ-AUDIT-TOOL/
 
-1. Create a GitHub repository and upload this folder.
-2. In the repository, open **Settings → Pages**.
-3. Select **Deploy from a branch**, then choose `main` and `/ (root)`.
-4. Save. GitHub supplies a public `github.io` address for the dashboard.
+## Tools
+- GSTR-2A/2B consolidator and reconciliation
+- GST JSON to Excel converter
+- Multi-bank PDF statement converter (SBI and others)
+- Tax PDF to Excel, PDF workspace, PDF unlocker
+- Voucher maker, sticker print and other practice tools
 
-The dashboard is a static site: no server, database, or hosting bill is required. The new PDF tools process files in the browser. A password-protected PDF is not bypassed: the tool directs an authorised user to the existing unlocker, then they choose the unlocked copy when they return.
+## Why
+Most GST and bank-statement tools are paid desktop software or cloud
+services that need client data uploaded. These tools are free, work
+offline and keep confidential data on your device.
 
-The PDF compressor makes a lower-resolution flattened copy in order to target a chosen file size. It may not reach every target and removes selectable text and links; use the OCR-text action afterwards when a text extract is needed.
+## Privacy
+No server, no database, no analytics. Libraries are bundled locally
+and the pages use a no-network Content Security Policy.
 
-The dashboard opens `SBI.html` for the bank converter because the supplied file contains the converter while the current hosted URL is displaying only the logo. When deploying, keep `SBI.html` in the same folder as `index.html`.
+## Contributing
+Issues and pull requests are welcome, especially for new bank
+statement formats and GST return types.
 
-## Adding a new workspace
-
-Build each future tool as its own HTML page in this folder, then add a card to the `tools` grid in `index.html`. This avoids changing production tools while the dashboard grows.
+## License
+MIT
